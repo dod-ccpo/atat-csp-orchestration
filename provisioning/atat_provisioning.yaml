@@ -1,6 +1,7 @@
 openapi: 3.0.2
 servers:
-  - url: /atat
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/jeffsegal-ccpo/atat-provisioning/1.0.0
 info:
   description: >-
     This is a DRAFT version of a notional API meant for provisioning resources
@@ -60,6 +61,13 @@ paths:
         AAdd a child to a parent Organization. Can be another Organization or a
         Portfolio.
       operationId: addOrganizationChild
+      parameters:
+        - name: organizationId
+          in: path
+          description: ID of the Organization
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -146,6 +154,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: fundingSourceId
+          in: path
+          description: ID of the FundingSource
+          required: true
+          schema:
+            type: string
       responses:
         '405':
           description: Invalid input
@@ -172,6 +186,12 @@ paths:
         - name: portfolioId
           in: path
           description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: fundingSourceId
+          in: path
+          description: ID of the FundingSource
           required: true
           schema:
             type: string
@@ -215,9 +235,9 @@ paths:
       description: Returns a single Application
       operationId: getApplicationById
       parameters:
-        - name: applicationId
+        - name: portfolioId
           in: path
-          description: ID of the Application
+          description: ID of the portfolio
           required: true
           schema:
             type: string
@@ -235,7 +255,7 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Application not found
-  '/portfolio/{portfolioId}/application/{applicationId/environment':
+  '/portfolio/{portfolioId}/application/{applicationId}/environment':
     post:
       tags:
         - portfolio
@@ -278,9 +298,15 @@ paths:
       description: Returns a single Environment
       operationId: getEnvironmentById
       parameters:
-        - name: environmentId
+        - name: portfolioId
           in: path
-          description: ID of the Environment
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the application
           required: true
           schema:
             type: string
@@ -298,7 +324,7 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Environment not found
-  '/portfolio/{portfolioId}/application/{applicationId/environment/{environmentId}/operator_role':
+  '/portfolio/{portfolioId}/application/{applicationId}/environment/{environmentId}/operator_role':
     post:
       tags:
         - portfolio
