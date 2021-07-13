@@ -1,24 +1,23 @@
 openapi: 3.0.2
-servers:
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/jeffsegal-ccpo/atat-provisioning/1.0.0
 info:
   description: >-
     This is a DRAFT version of a notional API meant for provisioning resources
     into the MCT.
   version: 1.0.0-SNAPSHOT
-  title: ATAT Provisioning
+  title: ATAT External API - Provisioning
   contact:
     email: replaceme@ccpo.mil
 tags:
   - name: organization
-    description: Organization desc
+    description: >-
+      Organizations are collections of Portfolios or other Organzations whose purpose is to
+      enable the management of cloud resources and ability to roll up expenditures.
   - name: portfolio
     description: >-
-      Portfolios represent a collection of Applications under the purview of a
-      Mission Owner
+      Portfolios represent a collection of related Applications under the purview of a
+      Mission Owner.
 paths:
-  /organization:
+  /organizations:
     post:
       tags:
         - organization
@@ -29,9 +28,6 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Organization'
             application/json:
               schema:
                 $ref: '#/components/schemas/Organization'
@@ -44,21 +40,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Organization'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Organization'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Organization'
-  '/organization/{organizationId}/child':
+  '/organizations/{organizationId}/child':
     post:
       tags:
         - organization
       summary: >-
         Add a child to a parent Organization. Can be another Organization or a
-        Portfolio.
-      description: >-
-        AAdd a child to a parent Organization. Can be another Organization or a
         Portfolio.
       operationId: addOrganizationChild
       parameters:
@@ -72,18 +59,13 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/xml:
+            application/json:
               schema:
                 discriminator:
                   propertyName: type
                   mapping:
                     organization: '#/components/schemas/Organization'
                     portfolio: '#/components/schemas/Portfolio'
-                oneOf:
-                  - $ref: '#/components/schemas/Organization'
-                  - $ref: '#/components/schemas/Portfolio'
-            application/json:
-              schema:
                 oneOf:
                   - $ref: '#/components/schemas/Organization'
                   - $ref: '#/components/schemas/Portfolio'
@@ -100,22 +82,36 @@ paths:
               oneOf:
                 - $ref: '#/components/schemas/Organization'
                 - $ref: '#/components/schemas/Portfolio'
-          application/xml:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/Organization'
-                - $ref: '#/components/schemas/Portfolio'
-          application/x-www-form-urlencoded:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/Organization'
-                - $ref: '#/components/schemas/Portfolio'
-  '/portfolio/{portfolioId}/funding_source':
+  '/portfolios/{portfolioId}':
+    get:
+      tags:
+        - portfolio
+      summary: Gets an existing Portfolio
+      description: Returns a single Portfolio
+      operationId: getPortfolioById
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Portfolio successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/funding_sources':
     post:
       tags:
         - funding_source
       summary: Adds a new FundingSource to the given Portfolio
-      description: Adds a new FundingSource to the given Portfolio
       operationId: addFundingSource
       parameters:
         - name: portfolioId
@@ -134,18 +130,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FundingSource'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/FundingSource'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/FundingSource'
-  '/portfolio/{portfolioId}/funding_source/{fundingSourceId}':
+  '/portfolios/{portfolioId}/funding_sources/{fundingSourceId}':
     put:
       tags:
         - funding_source
       summary: Updates a FundingSource in a given Portfolio
-      description: Updates a FundingSource in a given Portfolio
       operationId: updateFundingSource
       parameters:
         - name: portfolioId
@@ -170,17 +159,10 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FundingSource'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/FundingSource'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/FundingSource'
     delete:
       tags:
         - funding_source
       summary: Deletes a FundingSource from a Portfolio
-      description: ''
       operationId: deleteFundingSource
       parameters:
         - name: portfolioId
@@ -198,7 +180,7 @@ paths:
       responses:
         '404':
           description: Invalid Portfolio ID
-  '/portfolio/{portfolioId}/application':
+  '/portfolios/{portfolioId}/applications':
     post:
       tags:
         - portfolio
@@ -222,18 +204,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Application'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Application'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Application'
     get:
       tags:
         - portfolio
-      summary: Gets an existing Application
-      description: Returns a single Application
-      operationId: getApplicationById
+      summary: Gets all Applications which belong to the given Portfolio
+      operationId: getPortfolioApplications
       parameters:
         - name: portfolioId
           in: path
@@ -243,19 +218,44 @@ paths:
             type: string
       responses:
         '200':
+          description: Applications successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+        '404':
+          description: Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}':
+    get:
+      tags:
+        - portfolio
+      summary: Gets a single Application which belong to the given Portfolio
+      operationId: getApplicationById
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the application
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
           description: Application successfully retrieved
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Application'
             application/json:
               schema:
                 $ref: '#/components/schemas/Application'
-        '400':
-          description: Invalid ID supplied
         '404':
-          description: Application not found
-  '/portfolio/{portfolioId}/application/{applicationId}/environment':
+          description: Portfolio or Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments':
     post:
       tags:
         - portfolio
@@ -285,18 +285,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Environment'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/Environment'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Environment'
     get:
       tags:
         - portfolio
-      summary: Gets an existing Environment
-      description: Returns a single Environment
-      operationId: getEnvironmentById
+      summary: Gets all Environments which belong to the given Application
+      operationId: getApplicationEnvironments
       parameters:
         - name: portfolioId
           in: path
@@ -314,17 +307,14 @@ paths:
         '200':
           description: Environment successfully retrieved
           content:
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Environment'
             application/json:
               schema:
-                $ref: '#/components/schemas/Environment'
-        '400':
-          description: Invalid ID supplied
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
         '404':
-          description: Environment not found
-  '/portfolio/{portfolioId}/application/{applicationId}/environment/{environmentId}/operator_role':
+          description: Portfolio or Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator_roles':
     post:
       tags:
         - portfolio
@@ -358,12 +348,6 @@ paths:
         required: true
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/OperatorRole'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/OperatorRole'
-          application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/OperatorRole'
 components:
