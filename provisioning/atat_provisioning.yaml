@@ -179,7 +179,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Funding Source Deleleted
+          description: Funding Source Deleted
         '404':
           description: Invalid Portfolio ID
   '/portfolios/{portfolioId}/applications':
