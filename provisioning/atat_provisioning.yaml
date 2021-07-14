@@ -1,0 +1,453 @@
+openapi: 3.0.2
+info:
+  description: >-
+    This is a DRAFT version of a notional API meant for provisioning resources
+    into the MCT.
+  version: 1.0.0-SNAPSHOT
+  title: ATAT External API - Provisioning
+  contact:
+    email: replaceme@ccpo.mil
+tags:
+  - name: organization
+    description: >-
+      Organizations are collections of Portfolios or other Organzations whose purpose is to
+      enable the management of cloud resources and ability to roll up expenditures.
+  - name: portfolio
+    description: >-
+      Portfolios represent a collection of related Applications under the purview of a
+      Mission Owner.
+paths:
+  /organizations:
+    post:
+      tags:
+        - organization
+      summary: Add a new top level Organization
+      description: Add a new top level Organization
+      operationId: addOrganization
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: Create a new Organization
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+  '/organizations/{organizationId}/child':
+    post:
+      tags:
+        - organization
+      summary: >-
+        Add a child to a parent Organization. Can be another Organization or a
+        Portfolio.
+      operationId: addOrganizationChild
+      parameters:
+        - name: organizationId
+          in: path
+          description: ID of the Organization
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    organization: '#/components/schemas/Organization'
+                    portfolio: '#/components/schemas/Portfolio'
+                oneOf:
+                  - $ref: '#/components/schemas/Organization'
+                  - $ref: '#/components/schemas/Portfolio'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: >-
+          A child of an Organization. Can be another Organization or a
+          Portfolio.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/Organization'
+                - $ref: '#/components/schemas/Portfolio'
+  '/portfolios/{portfolioId}':
+    get:
+      tags:
+        - portfolio
+      summary: Gets an existing Portfolio
+      description: Returns a single Portfolio
+      operationId: getPortfolioById
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Portfolio successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Portfolio'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/funding-sources':
+    post:
+      tags:
+        - funding_source
+      summary: Adds a new FundingSource to the given Portfolio
+      operationId: addFundingSource
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A new FundingSource
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundingSource'
+  '/portfolios/{portfolioId}/funding-sources/{fundingSourceId}':
+    put:
+      tags:
+        - funding_source
+      summary: Updates a FundingSource in a given Portfolio
+      operationId: updateFundingSource
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: fundingSourceId
+          in: path
+          description: ID of the FundingSource
+          required: true
+          schema:
+            type: string
+      responses:
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A FundingSource
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundingSource'
+    delete:
+      tags:
+        - funding_source
+      summary: Deletes a FundingSource from a Portfolio
+      operationId: deleteFundingSource
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: fundingSourceId
+          in: path
+          description: ID of the FundingSource
+          required: true
+          schema:
+            type: string
+      responses:
+        '404':
+          description: Invalid Portfolio ID
+  '/portfolios/{portfolioId}/applications':
+    post:
+      tags:
+        - portfolio
+      summary: Adds a new Application to the given Portfolio
+      description: Adds a new Application to the given Portfolio
+      operationId: addApplication
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A new Application
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Application'
+    get:
+      tags:
+        - portfolio
+      summary: Gets all Applications which belong to the given Portfolio
+      operationId: getPortfolioApplications
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Applications successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Application'
+        '404':
+          description: Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}':
+    get:
+      tags:
+        - portfolio
+      summary: Gets a single Application which belong to the given Portfolio
+      operationId: getApplicationById
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the application
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Application successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
+        '404':
+          description: Portfolio or Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments':
+    post:
+      tags:
+        - portfolio
+      summary: Adds a new Environment to the given Application
+      description: Adds a new Environment to the given Application
+      operationId: addEnvironment
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the application
+          required: true
+          schema:
+            type: string
+      responses:
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A new Environment
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+    get:
+      tags:
+        - portfolio
+      summary: Gets all Environments which belong to the given Application
+      operationId: getApplicationEnvironments
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the application
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Environment successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
+        '404':
+          description: Portfolio or Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
+    post:
+      tags:
+        - portfolio
+      summary: Assigns an Operator to a specific level of access in an Environment
+      description: Assigns an Operator to a specific level of access in an Environment
+      operationId: addOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+        - name: environmentId
+          in: path
+          description: ID of the Environment
+          required: true
+          schema:
+            type: string
+      responses:
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A new OperatorRole
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorRole'
+components:
+  schemas:
+    Container:
+      type: "object"
+      required:
+        - "name"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        type:
+          type: "string"
+          description: "Container type"
+          enum:
+            - "organization"
+            - "portfolio"
+      xml:
+        name: "container"
+    Organization:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Container'
+      xml:
+        name: organization
+    Portfolio:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Container'
+      xml:
+        name: portfolio
+    FundingSource:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        task_order_number:
+          type: string
+        clin:
+          type: string
+        pop_start_date:
+          type: string
+          format: date
+          example: '2021-07-01'
+        pop_end_date:
+          type: string
+          format: date
+          example: '2022-07-01'
+      xml:
+        name: funding_source
+    Application:
+      type: object
+      description: >-
+        Applications represent a set of Environments which make up a single
+        application, system or set of related services as defined by a Mission
+        Owner
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: F-35 Joint Strike Fighter - Engine
+        description:
+          type: string
+      xml:
+        name: application
+    Environment:
+      type: object
+      description: >-
+        Environments represent a grouping of cloud resources, organized by
+        system usage (e.g. Production, Staging, Test, Dev, etc.)
+      required:
+        - name
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          example: Production
+      xml:
+        name: environment
+    OperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
+          type: string
+        access:
+          type: string
+          description: Operator Access Level to Environment
+          enum:
+            - administrator
+            - read_only
+      xml:
+        name: operator_role
