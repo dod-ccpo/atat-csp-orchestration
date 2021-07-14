@@ -202,14 +202,7 @@ paths:
           content:
             application/json:
               schema:
-                discriminator:
-                  propertyName: type
-                  mapping:
-                    organization: '#/components/schemas/Application'
-                    portfolio: '#/components/schemas/Portfolio'
-                oneOf:
-                  - $ref: '#/components/schemas/Application'
-                  - $ref: '#/components/schemas/Portfolio'
+                $ref: '#/components/schemas/Application'
         '405':
           description: Invalid input
       requestBody:
@@ -296,16 +289,7 @@ paths:
           content:
             application/json:
               schema:
-                discriminator:
-                  propertyName: type
-                  mapping:
-                    organization: '#/components/schemas/Application'
-                    portfolio: '#/components/schemas/Portfolio'
-                    enivornment: '#/components/schemas/Environemnt'
-                oneOf:
-                  - $ref: '#/components/schemas/Application'
-                  - $ref: '#/components/schemas/Portfolio'
-                  - $ref: '#/components/schemas/Environment'
+                $ref: '#/components/schemas/Environment'
         '405':
           description: Invalid input
       requestBody:
@@ -376,18 +360,7 @@ paths:
           content:
             application/json:
               schema:
-                discriminator:
-                  propertyName: type
-                  mapping:
-                    organization: '#/components/schemas/Application'
-                    portfolio: '#/components/schemas/Portfolio'
-                    enivornment: '#/components/schemas/Environemnt'
-                    operatorRole: '#/components/schemas/OperatorRole'
-                oneOf:
-                  - $ref: '#/components/schemas/Application'
-                  - $ref: '#/components/schemas/Portfolio'
-                  - $ref: '#/components/schemas/Environment'
-                  - $ref: '#/components/schemas/OperatorRole'
+                $ref: '#/components/schemas/OperatorRole'
         '405':
           description: Invalid input
       requestBody:
