@@ -178,6 +178,8 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Funding Source Deleted
         '404':
           description: Invalid Portfolio ID
   '/portfolios/{portfolioId}/applications':
@@ -195,6 +197,12 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Application'
         '405':
           description: Invalid input
       requestBody:
@@ -276,6 +284,12 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
         '405':
           description: Invalid input
       requestBody:
@@ -341,6 +355,12 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRole'
         '405':
           description: Invalid input
       requestBody:
