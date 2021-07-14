@@ -178,6 +178,8 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Funding Source Deleleted
         '404':
           description: Invalid Portfolio ID
   '/portfolios/{portfolioId}/applications':
@@ -195,6 +197,19 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    organization: '#/components/schemas/Application'
+                    portfolio: '#/components/schemas/Portfolio'
+                oneOf:
+                  - $ref: '#/components/schemas/Application'
+                  - $ref: '#/components/schemas/Portfolio'
         '405':
           description: Invalid input
       requestBody:
@@ -276,6 +291,21 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    organization: '#/components/schemas/Application'
+                    portfolio: '#/components/schemas/Portfolio'
+                    enivornment: '#/components/schemas/Environemnt'
+                oneOf:
+                  - $ref: '#/components/schemas/Application'
+                  - $ref: '#/components/schemas/Portfolio'
+                  - $ref: '#/components/schemas/Environment'
         '405':
           description: Invalid input
       requestBody:
@@ -341,6 +371,22 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                discriminator:
+                  propertyName: type
+                  mapping:
+                    organization: '#/components/schemas/Application'
+                    portfolio: '#/components/schemas/Portfolio'
+                    enivornment: '#/components/schemas/Environemnt'
+                    operatorRole: '#/components/schemas/OperatorRole'
+                oneOf:
+                  - $ref: '#/components/schemas/Application'
+                  - $ref: '#/components/schemas/Portfolio'
+                  - $ref: '#/components/schemas/Environment'
         '405':
           description: Invalid input
       requestBody:
