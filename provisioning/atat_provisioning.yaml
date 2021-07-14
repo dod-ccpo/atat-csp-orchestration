@@ -387,6 +387,7 @@ paths:
                   - $ref: '#/components/schemas/Application'
                   - $ref: '#/components/schemas/Portfolio'
                   - $ref: '#/components/schemas/Environment'
+                  - $ref: '#/components/schemas/OperatorRole'
         '405':
           description: Invalid input
       requestBody:
