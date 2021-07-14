@@ -107,7 +107,7 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
-  '/portfolios/{portfolioId}/funding_sources':
+  '/portfolios/{portfolioId}/funding-sources':
     post:
       tags:
         - funding_source
@@ -130,7 +130,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FundingSource'
-  '/portfolios/{portfolioId}/funding_sources/{fundingSourceId}':
+  '/portfolios/{portfolioId}/funding-sources/{fundingSourceId}':
     put:
       tags:
         - funding_source
@@ -314,7 +314,7 @@ paths:
                   $ref: '#/components/schemas/Environment'
         '404':
           description: Portfolio or Application not found
-  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator_roles':
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
     post:
       tags:
         - portfolio
