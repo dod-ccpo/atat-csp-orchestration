@@ -1,87 +1,42 @@
 openapi: 3.0.2
 info:
   description: >-
-    This is a DRAFT version of a notional API meant for provisioning resources
-    into the MCT.
+    This is a DRAFT version of the API meant for provisioning resources into JWCC Provider Clouds.
   version: 1.0.0-SNAPSHOT
   title: ATAT External API - Provisioning
   contact:
-    email: replaceme@ccpo.mil
+    email: atatdev+provisioning_api@ccpo.mil
 tags:
-  - name: organization
-    description: >-
-      Organizations are collections of Portfolios or other Organzations whose purpose is to
-      enable the management of cloud resources and ability to roll up expenditures.
   - name: portfolio
     description: >-
       Portfolios represent a collection of related Applications under the purview of a
       Mission Owner.
+  - name: funding_source
+    description: >-
+      Operations to add, update and remove Funding Sources from a given Portfolio
 paths:
-  /organizations:
+  '/portfolios':
     post:
       tags:
-        - organization
-      summary: Add a new top level Organization
-      description: Add a new top level Organization
-      operationId: addOrganization
+        - portfolio
+      summary: Adds a new Portfolio
+      operationId: addPortfolio
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
+                $ref: '#/components/schemas/PortfolioResponse'
         '405':
           description: Invalid input
       requestBody:
-        description: Create a new Organization
+        description: A new Portfolio
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Organization'
-  '/organizations/{organizationId}/child':
-    post:
-      tags:
-        - organization
-      summary: >-
-        Add a child to a parent Organization. Can be another Organization or a
-        Portfolio.
-      operationId: addOrganizationChild
-      parameters:
-        - name: organizationId
-          in: path
-          description: ID of the Organization
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                discriminator:
-                  propertyName: type
-                  mapping:
-                    organization: '#/components/schemas/Organization'
-                    portfolio: '#/components/schemas/Portfolio'
-                oneOf:
-                  - $ref: '#/components/schemas/Organization'
-                  - $ref: '#/components/schemas/Portfolio'
-        '405':
-          description: Invalid input
-      requestBody:
-        description: >-
-          A child of an Organization. Can be another Organization or a
-          Portfolio.
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/Organization'
-                - $ref: '#/components/schemas/Portfolio'
+              $ref: '#/components/schemas/Portfolio'
   '/portfolios/{portfolioId}':
     get:
       tags:
@@ -102,7 +57,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Portfolio'
+                $ref: '#/components/schemas/PortfolioResponse'
         '400':
           description: Invalid ID supplied
         '404':
@@ -182,152 +137,6 @@ paths:
           description: Funding Source Deleted
         '404':
           description: Invalid Portfolio ID
-  '/portfolios/{portfolioId}/applications':
-    post:
-      tags:
-        - portfolio
-      summary: Adds a new Application to the given Portfolio
-      description: Adds a new Application to the given Portfolio
-      operationId: addApplication
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Application'
-        '405':
-          description: Invalid input
-      requestBody:
-        description: A new Application
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Application'
-    get:
-      tags:
-        - portfolio
-      summary: Gets all Applications which belong to the given Portfolio
-      operationId: getPortfolioApplications
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Applications successfully retrieved
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Application'
-        '404':
-          description: Application not found
-  '/portfolios/{portfolioId}/applications/{applicationId}':
-    get:
-      tags:
-        - portfolio
-      summary: Gets a single Application which belong to the given Portfolio
-      operationId: getApplicationById
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the application
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Application successfully retrieved
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Application'
-        '404':
-          description: Portfolio or Application not found
-  '/portfolios/{portfolioId}/applications/{applicationId}/environments':
-    post:
-      tags:
-        - portfolio
-      summary: Adds a new Environment to the given Application
-      description: Adds a new Environment to the given Application
-      operationId: addEnvironment
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the application
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Environment'
-        '405':
-          description: Invalid input
-      requestBody:
-        description: A new Environment
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Environment'
-    get:
-      tags:
-        - portfolio
-      summary: Gets all Environments which belong to the given Application
-      operationId: getApplicationEnvironments
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the application
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Environment successfully retrieved
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Environment'
-        '404':
-          description: Portfolio or Application not found
   '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
     post:
       tags:
@@ -372,42 +181,44 @@ paths:
               $ref: '#/components/schemas/OperatorRole'
 components:
   schemas:
-    Container:
-      type: "object"
-      required:
-        - "name"
-      properties:
-        id:
-          type: "string"
-        name:
-          type: "string"
-        type:
-          type: "string"
-          description: "Container type"
-          enum:
-            - "organization"
-            - "portfolio"
-      xml:
-        name: "container"
-    Organization:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/Container'
-      xml:
-        name: organization
     Portfolio:
       type: object
-      allOf:
-        - $ref: '#/components/schemas/Container'
-      xml:
-        name: portfolio
-    FundingSource:
-      type: object
+      description: >-
+        Logical container for a set of cloud resources which are paid for by the same set of Funding Sources / Task Orders.
+        Contains a set of Applications, each of which contain a set of Environments in turn, all of which should support
+        independent management and access control.
       required:
         - name
       properties:
-        id:
-          type: string
+        name:
+          type: "string"
+        funding_sources:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/FundingSource'
+        applications:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Application'
+    PortfolioResponse:
+      allOf:
+        - $ref: '#/components/schemas/Portfolio'
+        - type: object
+          properties:
+            id:
+              type: "string"
+            applications:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/ApplicationResponse'
+    FundingSource:
+      type: object
+      description: >-
+        A set of Task Orders and CLINs used to pay for JWCC resources.
+      properties:
         task_order_number:
           type: string
         clin:
@@ -420,26 +231,35 @@ components:
           type: string
           format: date
           example: '2022-07-01'
-      xml:
-        name: funding_source
     Application:
       type: object
       description: >-
         Applications represent a set of Environments which make up a single
         application, system or set of related services as defined by a Mission
         Owner
-      required:
-        - name
       properties:
-        id:
-          type: string
         name:
           type: string
           example: F-35 Joint Strike Fighter - Engine
         description:
           type: string
-      xml:
-        name: application
+        environments:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Environment'
+    ApplicationResponse:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: "string"
+            environments:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/EnvironmentResponse'
+        - $ref: '#/components/schemas/Application'
     Environment:
       type: object
       description: >-
@@ -448,13 +268,16 @@ components:
       required:
         - name
       properties:
-        id:
-          type: string
         name:
           type: string
           example: Production
-      xml:
-        name: environment
+    EnvironmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Environment'
+        - type: object
+          properties:
+            id:
+              type: "string"
     OperatorRole:
       type: object
       required:
@@ -469,5 +292,3 @@ components:
           enum:
             - administrator
             - read_only
-      xml:
-        name: operator_role
