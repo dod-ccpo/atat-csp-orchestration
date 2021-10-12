@@ -201,12 +201,78 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio, Application or Environment not found
+  '/portfolios/{portfolioId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Portfolio
+      description: Assigns a specific level of access to an Operator within a given Portfolio
+      operationId: addPortfolioOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A new OperatorRole
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorRole'
+  '/portfolios/{portfolioId}/applications/{applicationId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Application
+      description: Assigns a specific level of access to an Operator within a given Application
+      operationId: addApplicationOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A new OperatorRole
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OperatorRole'
   '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
     post:
       tags:
         - provisioning
-      summary: Assigns an Operator to a specific level of access in an Environment
-      description: Assigns an Operator to a specific level of access in an Environment
+      summary: Assigns a role to an Operator of the Environment
+      description: Assigns a specific level of access to an Operator within a given Environment
       operationId: addOperatorRole
       parameters:
         - name: portfolioId
