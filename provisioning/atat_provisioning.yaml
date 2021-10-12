@@ -222,16 +222,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperatorRole'
+                $ref: '#/components/schemas/PortfolioOperatorRole'
         '405':
           description: Invalid input
       requestBody:
-        description: A new OperatorRole
+        description: A PortfolioOperatorRole that associates the Operator with a specific level of access
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OperatorRole'
+              $ref: '#/components/schemas/PortfolioOperatorRole'
   '/portfolios/{portfolioId}/applications/{applicationId}/operator-roles':
     post:
       tags:
@@ -258,23 +258,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperatorRole'
+                $ref: '#/components/schemas/ApplicationOperatorRole'
         '405':
           description: Invalid input
       requestBody:
-        description: A new OperatorRole
+        description: An ApplicationOperatorRole that associates the Operator with a specific level of access
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OperatorRole'
+              $ref: '#/components/schemas/ApplicationOperatorRole'
   '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
     post:
       tags:
         - provisioning
       summary: Assigns a role to an Operator of the Environment
       description: Assigns a specific level of access to an Operator within a given Environment
-      operationId: addOperatorRole
+      operationId: addEnvironmentOperatorRole
       parameters:
         - name: portfolioId
           in: path
@@ -300,16 +300,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperatorRole'
+                $ref: '#/components/schemas/EnvironmentOperatorRole'
         '405':
           description: Invalid input
       requestBody:
-        description: A new OperatorRole
+        description: An EnvironmentOperatorRole that associates the Operator with a specific level of access
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OperatorRole'
+              $ref: '#/components/schemas/EnvironmentOperatorRole'
 components:
   schemas:
     ProvisioningStatus:
@@ -428,7 +428,7 @@ components:
           type: array
           items:
             allOf:
-              - $ref: '#/components/schemas/OperatorRole'
+              - $ref: '#/components/schemas/EnvironmentOperatorRole'
     EnvironmentResponse:
       allOf:
         - $ref: '#/components/schemas/Environment'
@@ -437,7 +437,7 @@ components:
             id:
               type: string
               example: "csp-environment-id-123"
-    OperatorRole:
+    PortfolioOperatorRole:
       type: object
       required:
         - operator_email
@@ -445,13 +445,51 @@ components:
       properties:
         operator_email:
           type: string
-          example: "user@mail.mil"
+          example: "portfolio.admin@mail.mil"
         access:
+          $ref: '#/components/schemas/PortfolioAccess'
+    ApplicationOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
           type: string
-          description: Operator Access Level to Environment
-          enum:
-            - administrator
-            - read_only
+          example: "application.user@mail.mil"
+        access:
+          $ref: '#/components/schemas/ApplicationAccess'
+    EnvironmentOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
+          type: string
+          example: "environment.user@mail.mil"
+        access:
+          $ref: '#/components/schemas/EnvironmentAccess'
+    PortfolioAccess:
+      description: Operator access level to Portfolio
+      type: string
+      enum:
+        - root_administrator
+    ApplicationAccess:
+      description: Operator access level to Application
+      type: string
+      enum:
+        - administrator
+        - contributor
+        - read_only
+    EnvironmentAccess:
+      description: Operator access level to Environment
+      type: string
+      enum:
+        - administrator
+        - contributor
+        - read_only
+        - no_access
     TimePeriod:
       type: object
       properties:
