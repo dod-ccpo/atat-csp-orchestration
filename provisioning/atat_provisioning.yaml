@@ -478,7 +478,7 @@ components:
       description: Operator access level to Portfolio
       type: string
       enum:
-        - root_administrator
+        - portfolio_administrator
     ApplicationAccess:
       description: Operator access level to Application
       type: string
