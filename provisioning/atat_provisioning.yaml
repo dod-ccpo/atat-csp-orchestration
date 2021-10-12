@@ -22,6 +22,7 @@ paths:
       tags:
         - provisioning
       summary: Adds a new Portfolio
+      description: Adds a new Portfolio to be provisioned, including Applications, Environments, and Operators
       operationId: addPortfolio
       requestBody:
         description: A new Portfolio
@@ -56,7 +57,7 @@ paths:
       tags:
         - provisioning
       summary: Gets an existing Portfolio
-      description: Returns a single Portfolio
+      description: Returns a single existing Portfolio, including Applications, Environments, and Operators
       operationId: getPortfolioById
       parameters:
         - name: portfolioId
@@ -80,7 +81,8 @@ paths:
     post:
       tags:
         - cost
-      summary: Queries CSP for actual or forecasted cost data by Portfolio
+      summary: Returns cost data by Portfolio
+      description: Queries CSP for actual or forecasted cost data by Portfolio
       operationId: getCostsByPortfolio
       parameters:
         - name: portfolioId
@@ -116,7 +118,8 @@ paths:
     post:
       tags:
         - cost
-      summary: Queries CSP for actual or forecasted cost data by Application
+      summary: Returns cost data by Application
+      description: Queries CSP for actual or forecasted cost data by Application
       operationId: getCostsByApplication
       parameters:
         - name: portfolioId
@@ -158,7 +161,8 @@ paths:
     post:
       tags:
         - cost
-      summary: Queries CSP for actual or forecasted cost data by Environment
+      summary: Returns cost data by Environment
+      description: Queries CSP for actual or forecasted cost data by Environment
       operationId: getCostsByEnvironment
       parameters:
         - name: portfolioId
