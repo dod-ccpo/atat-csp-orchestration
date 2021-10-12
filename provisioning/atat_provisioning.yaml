@@ -10,11 +10,12 @@ info:
 tags:
   - name: provisioning
     description: >-
+      Operations to manage provisioned Portfolios and access to each.
       Portfolios represent a collection of related Applications under the purview of a
-      Mission Owner.
+      Mission Owner.  Applications may consist of one or more Environments.
   - name: cost
     description: >-
-      Operations to query for actual and forecasted costs by Portfolio
+      Operations to query for actual and forecasted costs
 paths:
   '/portfolios':
     post:
