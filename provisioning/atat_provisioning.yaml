@@ -493,7 +493,6 @@ components:
         - administrator
         - contributor
         - read_only
-        - no_access
     TimePeriod:
       type: object
       properties:
