@@ -354,6 +354,11 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/Application'
+        operator_roles:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/PortfolioOperatorRole'
     PortfolioResponse:
       allOf:
         - $ref: '#/components/schemas/Portfolio'
@@ -404,6 +409,11 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/Environment'
+        operator_roles:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ApplicationOperatorRole'
     ApplicationResponse:
       allOf:
         - type: object
