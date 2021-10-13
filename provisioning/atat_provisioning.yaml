@@ -10,17 +10,19 @@ info:
 tags:
   - name: provisioning
     description: >-
+      Operations to manage provisioned Portfolios and access to each.
       Portfolios represent a collection of related Applications under the purview of a
-      Mission Owner.
+      Mission Owner.  Applications may consist of one or more Environments.
   - name: cost
     description: >-
-      Operations to query for actual and forecasted costs by Portfolio
+      Operations to query for actual and forecasted costs
 paths:
   '/portfolios':
     post:
       tags:
         - provisioning
       summary: Adds a new Portfolio
+      description: Adds a new Portfolio to be provisioned, including Applications, Environments, and Operators
       operationId: addPortfolio
       requestBody:
         description: A new Portfolio
@@ -55,7 +57,7 @@ paths:
       tags:
         - provisioning
       summary: Gets an existing Portfolio
-      description: Returns a single Portfolio
+      description: Returns a single existing Portfolio, including Applications, Environments, and Operators
       operationId: getPortfolioById
       parameters:
         - name: portfolioId
@@ -79,7 +81,8 @@ paths:
     post:
       tags:
         - cost
-      summary: Queries CSP for actual or forecasted cost data by Portfolio
+      summary: Returns cost data by Portfolio
+      description: Queries CSP for actual or forecasted cost data by Portfolio
       operationId: getCostsByPortfolio
       parameters:
         - name: portfolioId
@@ -115,7 +118,8 @@ paths:
     post:
       tags:
         - cost
-      summary: Queries CSP for actual or forecasted cost data by Application
+      summary: Returns cost data by Application
+      description: Queries CSP for actual or forecasted cost data by Application
       operationId: getCostsByApplication
       parameters:
         - name: portfolioId
@@ -157,7 +161,8 @@ paths:
     post:
       tags:
         - cost
-      summary: Queries CSP for actual or forecasted cost data by Environment
+      summary: Returns cost data by Environment
+      description: Queries CSP for actual or forecasted cost data by Environment
       operationId: getCostsByEnvironment
       parameters:
         - name: portfolioId
@@ -201,13 +206,79 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio, Application or Environment not found
+  '/portfolios/{portfolioId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Portfolio
+      description: Assigns a specific level of access to an Operator within a given Portfolio
+      operationId: addPortfolioOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioOperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A PortfolioOperatorRole that associates the Operator with a specific level of access
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioOperatorRole'
+  '/portfolios/{portfolioId}/applications/{applicationId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Application
+      description: Assigns a specific level of access to an Operator within a given Application
+      operationId: addApplicationOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: An ApplicationOperatorRole that associates the Operator with a specific level of access
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationOperatorRole'
   '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
     post:
       tags:
         - provisioning
-      summary: Assigns an Operator to a specific level of access in an Environment
-      description: Assigns an Operator to a specific level of access in an Environment
-      operationId: addOperatorRole
+      summary: Assigns a role to an Operator of the Environment
+      description: Assigns a specific level of access to an Operator within a given Environment
+      operationId: addEnvironmentOperatorRole
       parameters:
         - name: portfolioId
           in: path
@@ -233,16 +304,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OperatorRole'
+                $ref: '#/components/schemas/EnvironmentOperatorRole'
         '405':
           description: Invalid input
       requestBody:
-        description: A new OperatorRole
+        description: An EnvironmentOperatorRole that associates the Operator with a specific level of access
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OperatorRole'
+              $ref: '#/components/schemas/EnvironmentOperatorRole'
 components:
   schemas:
     ProvisioningStatus:
@@ -361,7 +432,7 @@ components:
           type: array
           items:
             allOf:
-              - $ref: '#/components/schemas/OperatorRole'
+              - $ref: '#/components/schemas/EnvironmentOperatorRole'
     EnvironmentResponse:
       allOf:
         - $ref: '#/components/schemas/Environment'
@@ -370,7 +441,7 @@ components:
             id:
               type: string
               example: "csp-environment-id-123"
-    OperatorRole:
+    PortfolioOperatorRole:
       type: object
       required:
         - operator_email
@@ -378,13 +449,50 @@ components:
       properties:
         operator_email:
           type: string
-          example: "user@mail.mil"
+          example: "portfolio.admin@mail.mil"
         access:
+          $ref: '#/components/schemas/PortfolioAccess'
+    ApplicationOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
           type: string
-          description: Operator Access Level to Environment
-          enum:
-            - administrator
-            - read_only
+          example: "application.user@mail.mil"
+        access:
+          $ref: '#/components/schemas/ApplicationAccess'
+    EnvironmentOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
+          type: string
+          example: "environment.user@mail.mil"
+        access:
+          $ref: '#/components/schemas/EnvironmentAccess'
+    PortfolioAccess:
+      description: Operator access level to Portfolio
+      type: string
+      enum:
+        - portfolio_administrator
+    ApplicationAccess:
+      description: Operator access level to Application
+      type: string
+      enum:
+        - administrator
+        - contributor
+        - read_only
+    EnvironmentAccess:
+      description: Operator access level to Environment
+      type: string
+      enum:
+        - administrator
+        - contributor
+        - read_only
     TimePeriod:
       type: object
       properties:
