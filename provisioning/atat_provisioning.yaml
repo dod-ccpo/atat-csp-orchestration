@@ -3,7 +3,7 @@ info:
   description: >-
     This is a DRAFT version of the API meant for provisioning resources into a JWCC Provider Cloud Environment. It will be
     implemented and maintained by all participating CSPs.
-  version: 1.0.0-SNAPSHOT
+  version: 0.1.0
   title: ATAT External API - Provisioning
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
