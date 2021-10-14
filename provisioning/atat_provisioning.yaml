@@ -1,0 +1,567 @@
+openapi: 3.0.2
+info:
+  description: >-
+    This is a DRAFT version of the API meant for provisioning resources into a JWCC Provider Cloud Environment. It will be
+    implemented and maintained by all participating CSPs.
+  version: 0.1.0
+  title: ATAT External API - Provisioning
+  contact:
+    email: atat-dev+provisioning_api@ccpo.mil
+tags:
+  - name: provisioning
+    description: >-
+      Operations to manage provisioned Portfolios and access to each.
+      Portfolios represent a collection of related Applications under the purview of a
+      Mission Owner.  Applications may consist of one or more Environments.
+  - name: cost
+    description: >-
+      Operations to query for actual and forecasted costs
+paths:
+  '/portfolios':
+    post:
+      tags:
+        - provisioning
+      summary: Adds a new Portfolio
+      description: Adds a new Portfolio to be provisioned, including Applications, Environments, and Operators
+      operationId: addPortfolio
+      requestBody:
+        description: A new Portfolio
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Portfolio'
+      responses:
+        '200':
+          description: Portfolio fully provisioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '202':
+          description: Portfolio provisioning request has been accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisioningStatus'
+          headers:
+            Location:
+              description: Endpoint which ATAT should poll to receive status updates for this provisioning job
+              schema:
+                type: string
+                example: https://csp.com/jwcc/provisioning/123456789/status
+        '405':
+          description: Invalid input
+  '/portfolios/{portfolioId}':
+    get:
+      tags:
+        - provisioning
+      summary: Gets an existing Portfolio
+      description: Returns a single existing Portfolio, including Applications, Environments, and Operators
+      operationId: getPortfolioById
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Portfolio successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/cost':
+    post:
+      tags:
+        - cost
+      summary: Returns cost data by Portfolio
+      description: Queries CSP for actual or forecasted cost data by Portfolio
+      operationId: getCostsByPortfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CostRequest'
+            examples:
+              CostRequestActual:
+                $ref: '#/components/examples/CostRequestActual'
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CostResponse'
+              examples:
+                CostResponseActual:
+                  $ref: '#/components/examples/CostResponseActual'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/cost':
+    post:
+      tags:
+        - cost
+      summary: Returns cost data by Application
+      description: Queries CSP for actual or forecasted cost data by Application
+      operationId: getCostsByApplication
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CostRequest'
+            examples:
+              CostRequestActual:
+                $ref: '#/components/examples/CostRequestActual'
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CostResponse'
+              examples:
+                CostResponseActual:
+                  $ref: '#/components/examples/CostResponseActual'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio or Application not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/cost':
+    post:
+      tags:
+        - cost
+      summary: Returns cost data by Environment
+      description: Queries CSP for actual or forecasted cost data by Environment
+      operationId: getCostsByEnvironment
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+        - name: environmentId
+          in: path
+          description: ID of the Environment
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CostRequest'
+            examples:
+              CostRequestActual:
+                $ref: '#/components/examples/CostRequestActual'
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CostResponse'
+              examples:
+                CostResponseActual:
+                  $ref: '#/components/examples/CostResponseActual'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio, Application or Environment not found
+  '/portfolios/{portfolioId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Portfolio
+      description: Assigns a specific level of access to an Operator within a given Portfolio
+      operationId: addPortfolioOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioOperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A PortfolioOperatorRole that associates the Operator with a specific level of access
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioOperatorRole'
+  '/portfolios/{portfolioId}/applications/{applicationId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Application
+      description: Assigns a specific level of access to an Operator within a given Application
+      operationId: addApplicationOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationOperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: An ApplicationOperatorRole that associates the Operator with a specific level of access
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationOperatorRole'
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
+    post:
+      tags:
+        - provisioning
+      summary: Assigns a role to an Operator of the Environment
+      description: Assigns a specific level of access to an Operator within a given Environment
+      operationId: addEnvironmentOperatorRole
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the Application
+          required: true
+          schema:
+            type: string
+        - name: environmentId
+          in: path
+          description: ID of the Environment
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentOperatorRole'
+        '405':
+          description: Invalid input
+      requestBody:
+        description: An EnvironmentOperatorRole that associates the Operator with a specific level of access
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentOperatorRole'
+components:
+  schemas:
+    ProvisioningStatus:
+      type: object
+      description: >-
+        Represents the status of a provisioning job submitted via POST /portfolios
+      properties:
+        id:
+          type: string
+          description: The ID of the Provisioning job; used for retrieving status to inform end user
+          example: 123456789
+        status:
+          type: string
+          enum:
+            - "NOT_STARTED"
+            - "IN_PROGRESS"
+            - "COMPLETE"
+            - "FAILED"
+    Portfolio:
+      type: object
+      description: >-
+        Logical container for a set of cloud resources which are paid for by the same set of Funding Sources / Task Orders.
+        Contains a set of Applications, each of which contain a set of Environments in turn, all of which should support
+        independent management and access control.
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Sample Portfolio name"
+        funding_sources:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/FundingSource'
+        applications:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Application'
+        operator_roles:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/PortfolioOperatorRole'
+    PortfolioResponse:
+      allOf:
+        - $ref: '#/components/schemas/Portfolio'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "csp-portfolio-id-123"
+            applications:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/ApplicationResponse'
+    FundingSource:
+      type: object
+      description: >-
+        A set of Task Orders and CLINs used to pay for JWCC resources.
+      properties:
+        task_order_number:
+          type: string
+          example: "1234567891234"
+        clin:
+          type: string
+          example: "0001"
+        pop_start_date:
+          type: string
+          format: date
+          example: "2021-07-01"
+        pop_end_date:
+          type: string
+          format: date
+          example: "2022-07-01"
+    Application:
+      type: object
+      description: >-
+        Applications represent a set of Environments which make up a single
+        application, system or set of related services as defined by a Mission
+        Owner
+      properties:
+        name:
+          type: string
+          example: "Sample Application name"
+        description:
+          type: string
+          example: "Sample Application description"
+        environments:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Environment'
+        operator_roles:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/ApplicationOperatorRole'
+    ApplicationResponse:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "csp-application-id-123"
+            environments:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/EnvironmentResponse'
+        - $ref: '#/components/schemas/Application'
+    Environment:
+      type: object
+      description: >-
+        Environments represent a grouping of cloud resources, organized by
+        system usage (e.g. Production, Staging, Test, Dev, etc.)
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Production"
+        operator_roles:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/EnvironmentOperatorRole'
+    EnvironmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Environment'
+        - type: object
+          properties:
+            id:
+              type: string
+              example: "csp-environment-id-123"
+    PortfolioOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
+          type: string
+          example: "portfolio.admin@mail.mil"
+        access:
+          $ref: '#/components/schemas/PortfolioAccess'
+    ApplicationOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
+          type: string
+          example: "application.user@mail.mil"
+        access:
+          $ref: '#/components/schemas/ApplicationAccess'
+    EnvironmentOperatorRole:
+      type: object
+      required:
+        - operator_email
+        - access
+      properties:
+        operator_email:
+          type: string
+          example: "environment.user@mail.mil"
+        access:
+          $ref: '#/components/schemas/EnvironmentAccess'
+    PortfolioAccess:
+      description: Operator access level to Portfolio
+      type: string
+      enum:
+        - portfolio_administrator
+    ApplicationAccess:
+      description: Operator access level to Application
+      type: string
+      enum:
+        - administrator
+        - contributor
+        - read_only
+    EnvironmentAccess:
+      description: Operator access level to Environment
+      type: string
+      enum:
+        - administrator
+        - contributor
+        - read_only
+    TimePeriod:
+      type: object
+      properties:
+        start_date:
+          type: string
+          format: date
+          example: "2021-10-01"
+        end_date:
+          type: string
+          format: date
+          example: "2021-12-01"
+    CostRequest:
+      type: object
+      properties:
+        period:
+          $ref: '#/components/schemas/TimePeriod'
+        granularity:
+          type: string
+          enum:
+            - "MONTHLY"
+            - "DAILY"
+        type:
+          type: string
+          enum:
+            - "ACTUAL"
+            - "FORECAST"
+    CostResponse:
+      type: object
+      properties:
+        total:
+          type: string
+          description: Total cost (ACTUAL or FORECAST) for entire time period in USD
+          example: "12345.6789"
+        results:
+          type: array
+          items:
+            properties:
+              period:
+                $ref: '#/components/schemas/TimePeriod'
+              value:
+                type: string
+                description: Cost (ACTUAL or FORECAST) for the given time period in USD
+  examples:
+    CostRequestActual:
+      value:
+        period:
+          start_date: "2021-10-01"
+          end_date: "2021-12-01"
+        granularity: "MONTHLY"
+        type: "ACTUAL"
+    CostResponseActual:
+      value:
+        total: "50.00"
+        results:
+          - period:
+              start_date: "2021-10-01"
+              end_date: "2021-11-01"
+            value: "20.00"
+          - period:
+              start_date: "2021-11-01"
+              end_date: "2021-12-01"
+            value: "30.00"
