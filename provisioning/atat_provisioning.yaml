@@ -4,18 +4,21 @@ info:
     This is a DRAFT version of the API meant for provisioning resources into a JWCC Provider Cloud Environment. It will be
     implemented and maintained by all participating CSPs.
   version: 0.1.0
-  title: ATAT External API - Provisioning
+  title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
 tags:
-  - name: provisioning
+  - name: access
     description: >-
-      Operations to manage provisioned Portfolios and access to each.
-      Portfolios represent a collection of related Applications under the purview of a
-      Mission Owner.  Applications may consist of one or more Environments.
+      Operations to manage access to provisioned Portfolios
   - name: cost
     description: >-
       Operations to query for actual and forecasted costs
+  - name: provisioning
+    description: >-
+      Operations to manage provisioned Portfolios.
+      Portfolios represent a collection of related Applications under the purview of a
+      Mission Owner.  Applications may consist of one or more Environments.
 paths:
   '/portfolios':
     post:
@@ -98,8 +101,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CostRequest'
             examples:
-              CostRequestActual:
-                $ref: '#/components/examples/CostRequestActual'
+              CostRequestActualEx:
+                $ref: '#/components/examples/CostRequestActualEx'
       responses:
         '200':
           description: Cost operation successful
@@ -108,55 +111,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/CostResponse'
               examples:
-                CostResponseActual:
-                  $ref: '#/components/examples/CostResponseActual'
+                CostResponseActualEx:
+                  $ref: '#/components/examples/CostResponseActualEx'
         '400':
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
-  '/portfolios/{portfolioId}/applications/{applicationId}/cost':
-    post:
-      tags:
-        - cost
-      summary: Returns cost data by Application
-      description: Queries CSP for actual or forecasted cost data by Application
-      operationId: getCostsByApplication
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the Application
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CostRequest'
-            examples:
-              CostRequestActual:
-                $ref: '#/components/examples/CostRequestActual'
-      responses:
-        '200':
-          description: Cost operation successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CostResponse'
-              examples:
-                CostResponseActual:
-                  $ref: '#/components/examples/CostResponseActual'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Portfolio or Application not found
   '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/cost':
     post:
       tags:
@@ -190,8 +150,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CostRequest'
             examples:
-              CostRequestActual:
-                $ref: '#/components/examples/CostRequestActual'
+              CostRequestActualEx:
+                $ref: '#/components/examples/CostRequestActualEx'
       responses:
         '200':
           description: Cost operation successful
@@ -200,8 +160,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/CostResponse'
               examples:
-                CostResponseActual:
-                  $ref: '#/components/examples/CostResponseActual'
+                CostResponseActualEx:
+                  $ref: '#/components/examples/CostResponseActualEx'
         '400':
           description: Invalid ID supplied
         '404':
@@ -209,7 +169,7 @@ paths:
   '/portfolios/{portfolioId}/operator-roles':
     post:
       tags:
-        - provisioning
+        - access
       summary: Assigns a role to an Operator of the Portfolio
       description: Assigns a specific level of access to an Operator within a given Portfolio
       operationId: addPortfolioOperatorRole
@@ -239,7 +199,7 @@ paths:
   '/portfolios/{portfolioId}/applications/{applicationId}/operator-roles':
     post:
       tags:
-        - provisioning
+        - access
       summary: Assigns a role to an Operator of the Application
       description: Assigns a specific level of access to an Operator within a given Application
       operationId: addApplicationOperatorRole
@@ -275,7 +235,7 @@ paths:
   '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
     post:
       tags:
-        - provisioning
+        - access
       summary: Assigns a role to an Operator of the Environment
       description: Assigns a specific level of access to an Operator within a given Environment
       operationId: addEnvironmentOperatorRole
@@ -546,14 +506,14 @@ components:
                 type: string
                 description: Cost (ACTUAL or FORECAST) for the given time period in USD
   examples:
-    CostRequestActual:
+    CostRequestActualEx:
       value:
         period:
           start_date: "2021-10-01"
           end_date: "2021-12-01"
         granularity: "MONTHLY"
         type: "ACTUAL"
-    CostResponseActual:
+    CostResponseActualEx:
       value:
         total: "50.00"
         results:
