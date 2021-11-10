@@ -86,7 +86,7 @@ paths:
       parameters:
         - name: portfolioId
           in: path
-          description: ID of the portfolio
+          description: ID of the Portfolio
           required: true
           schema:
             type: string
@@ -219,7 +219,7 @@ paths:
       parameters:
         - name: portfolioId
           in: path
-          description: ID of the portfolio
+          description: ID of the Portfolio
           required: true
           schema:
             type: string
@@ -262,7 +262,7 @@ paths:
       parameters:
         - name: portfolioId
           in: path
-          description: ID of the portfolio
+          description: ID of the Portfolio
           required: true
           schema:
             type: string
@@ -295,13 +295,13 @@ paths:
       parameters:
         - name: portfolioId
           in: path
-          description: ID of the portfolio
+          description: ID of the Portfolio
           required: true
           schema:
             type: string
         - name: applicationId
           in: path
-          description: ID of the application
+          description: ID of the Application
           required: true
           schema:
             type: string
