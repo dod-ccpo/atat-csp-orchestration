@@ -80,43 +80,6 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
-  '/portfolios/{portfolioId}/cost':
-    post:
-      tags:
-        - cost
-      summary: Returns cost data by Portfolio
-      description: Queries CSP for actual or forecasted cost data by Portfolio
-      operationId: getCostsByPortfolio
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the portfolio
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CostRequest'
-            examples:
-              CostRequestActualEx:
-                $ref: '#/components/examples/CostRequestActualEx'
-      responses:
-        '200':
-          description: Cost operation successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CostResponse'
-              examples:
-                CostResponseActualEx:
-                  $ref: '#/components/examples/CostResponseActualEx'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Portfolio not found
   '/portfolios/{portfolioId}/operator-roles':
     post:
       tags:
@@ -225,6 +188,152 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/EnvironmentOperatorRole'
+  '/portfolios/{portfolioId}/cost':
+    post:
+      tags:
+        - cost
+      summary: Returns cost data by Portfolio
+      description: Queries CSP for actual and forecasted cost data by Portfolio
+      operationId: getCostsByPortfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FOOBAR'
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FOOBAR'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/taskorders/{taskOrderNumber}/clins/{clin}/cost':
+    post:
+      tags:
+        - cost
+      summary: Returns cost data by Clin
+      description: Queries CSP for actual and forecasted cost data by Clin
+      operationId: getCostsByClin
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: taskOrderNumber
+          in: path
+          description: task order number
+          required: true
+          schema:
+            type: string
+        - name: clin
+          in: path
+          description: contract line item number
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FOOBAR'
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FOOBAR'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/applications':
+    post:
+      tags:
+        - provisioning
+      summary: Adds new Applications
+      description: Adds new Applications to be provisioned in an existing Portfolio
+      operationId: addApplications
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Application'
+      responses:
+        '200':
+          description: Application(s) fully provisioned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationsResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/applications/{applicationId}/environments':
+    post:
+      tags:
+        - provisioning
+      summary: Adds new Environments
+      description: Adds new Environments to be provisioned in an existing Application
+      operationId: addEnvironments
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the portfolio
+          required: true
+          schema:
+            type: string
+        - name: applicationId
+          in: path
+          description: ID of the application
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Environment'
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentsResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
 components:
   schemas:
     ProvisioningStatus:
@@ -325,6 +434,18 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/ApplicationOperatorRole'
+    ApplicationsResponse:
+      allOf:
+        - type: object
+          properties:
+            portfolioId:
+              type: string
+              example: "csp-portfolio-id-123"
+            applications:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/ApplicationResponse'
     ApplicationResponse:
       allOf:
         - type: object
@@ -354,6 +475,21 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/EnvironmentOperatorRole'
+    EnvironmentsResponse:
+      allOf:
+        - type: object
+          properties:
+            portfolioId:
+              type: string
+              example: "csp-portfolio-id-123"
+            applicationId:
+              type: string
+              example: "csp-application-id-123"
+            environments:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/EnvironmentResponse'
     EnvironmentResponse:
       allOf:
         - $ref: '#/components/schemas/Environment'
@@ -414,65 +550,5 @@ components:
         - administrator
         - contributor
         - read_only
-    TimePeriod:
-      type: object
-      properties:
-        start_date:
-          type: string
-          format: date
-          example: "2021-10-01"
-        end_date:
-          type: string
-          format: date
-          example: "2021-12-01"
-    CostRequest:
-      type: object
-      properties:
-        period:
-          $ref: '#/components/schemas/TimePeriod'
-        granularity:
-          type: string
-          enum:
-            - "MONTHLY"
-            - "DAILY"
-        type:
-          type: string
-          enum:
-            - "ACTUAL"
-            - "FORECAST"
-    CostResponse:
-      type: object
-      properties:
-        total:
-          type: string
-          description: Total cost (ACTUAL or FORECAST) for entire time period in USD
-          example: "12345.6789"
-        results:
-          type: array
-          items:
-            properties:
-              period:
-                $ref: '#/components/schemas/TimePeriod'
-              value:
-                type: string
-                description: Cost (ACTUAL or FORECAST) for the given time period in USD
-  examples:
-    CostRequestActualEx:
-      value:
-        period:
-          start_date: "2021-10-01"
-          end_date: "2021-12-01"
-        granularity: "MONTHLY"
-        type: "ACTUAL"
-    CostResponseActualEx:
-      value:
-        total: "50.00"
-        results:
-          - period:
-              start_date: "2021-10-01"
-              end_date: "2021-11-01"
-            value: "20.00"
-          - period:
-              start_date: "2021-11-01"
-              end_date: "2021-12-01"
-            value: "30.00"
+    FOOBAR:
+      type: string
