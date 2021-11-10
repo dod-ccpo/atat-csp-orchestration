@@ -8,7 +8,7 @@ info:
 
     ### Organization of provisioned resources
     
-    Provisioned resources under the purvue of a mission owner are organized into a three level structure.
+    Provisioned resources under the purvue of a mission owner are organized in a three-level hierarchy.
 
     * Portfolio
       * Application
@@ -19,11 +19,15 @@ info:
 
     Access can be granted to *operators* at each level.
 
-    ### Costs
+    ### Funding sources and cost reporting
 
-    Portfolios contain one or more *task orders* (TO). Task orders contain one or more *contract
-    line item numbers* (CLIN) that represent lines of funding. CSP costs related to provisioned resources
-    can be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
+    Portfolios contain one or more funding sources. A funding source consists of a
+    *Task Order* (TO) and a *Contract Line Item Number* (CLIN) on that TO. Task orders contain one or more CLINs.
+    CLINs specify funding amounts and a time period in which funds can be spent.
+    
+
+    Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
+    be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
   version: 0.1.0
   title: ATAT CSP API
   contact:
@@ -385,7 +389,7 @@ components:
     FundingSource:
       type: object
       description: >-
-        A set of Task Orders and CLINs used to pay for JWCC resources.
+        A Task Order and CLIN used to pay for JWCC resources.
       properties:
         task_order_number:
           type: string
