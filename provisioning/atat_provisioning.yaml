@@ -1,8 +1,29 @@
 openapi: 3.0.2
 info:
   description: >-
-    This is a DRAFT version of the API meant for provisioning resources into a JWCC Provider Cloud Environment. It will be
-    implemented and maintained by all participating CSPs.
+    This API is meant for provisioning resources in a JWCC Provider Cloud Environment.
+    The cloud products and services used in JWCC are provided by commercial cloud service providers (CSP).
+    This API will be implemented and maintained by all participating CSPs.
+    This is a DRAFT version of the API.
+
+    ### Organization of provisioned resources
+    
+    Provisioned resources under the purvue of a mission owner are organized into a three level structure.
+
+    * Portfolio
+      * Application
+        * Environment
+
+    *Portfolios* consist of one or more applications. *Applications* consist of one or more environments.
+    *Environments* directly contain provisioned resources.
+
+    Access can be granted to *operators* at each level.
+
+    ### Costs
+
+    Portfolios contain one or more *task orders* (TO). Task orders contain one or more *contract
+    line item numbers* (CLIN) that represent lines of funding. CSP costs related to provisioned resources
+    can be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by portfolio and by CLIN.
   version: 0.1.0
   title: ATAT CSP API
   contact:
