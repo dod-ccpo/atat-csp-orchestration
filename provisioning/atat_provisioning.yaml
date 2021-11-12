@@ -251,7 +251,7 @@ paths:
       tags:
         - cost
       summary: Returns cost data by Clin
-      description: Queries CSP for actual and forecasted cost data by Clin
+      description: Queries CSP for actual or forecasted cost data by Clin
       operationId: getCostsByClin
       parameters:
         - name: portfolioId
@@ -277,14 +277,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FOOBAR'
+              $ref: '#/components/schemas/CostRequest'
+            examples:
+              CostRequestActual:
+                $ref: '#/components/examples/CostRequestActual'
       responses:
         '200':
           description: Cost operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FOOBAR'
+                $ref: '#/components/schemas/CostResponse'
+              examples:
+                CostResponseActual:
+                  $ref: '#/components/examples/CostResponseActual'
         '400':
           description: Invalid ID supplied
         '404':
@@ -577,5 +583,65 @@ components:
         - administrator
         - contributor
         - read_only
-    FOOBAR:
-      type: string
+    TimePeriod:
+      type: object
+      properties:
+        start_date:
+          type: string
+          format: date
+          example: "2021-10-01"
+        end_date:
+          type: string
+          format: date
+          example: "2021-12-01"
+    CostRequest:
+      type: object
+      properties:
+        period:
+          $ref: '#/components/schemas/TimePeriod'
+        granularity:
+          type: string
+          enum:
+            - "MONTHLY"
+            - "DAILY"
+        type:
+          type: string
+          enum:
+            - "ACTUAL"
+            - "FORECAST"
+    CostResponse:
+      type: object
+      properties:
+        total:
+          type: string
+          description: Total cost (ACTUAL or FORECAST) for entire time period in USD
+          example: "12345.6789"
+        results:
+          type: array
+          items:
+            properties:
+              period:
+                $ref: '#/components/schemas/TimePeriod'
+              value:
+                type: string
+                description: Cost (ACTUAL or FORECAST) for the given time period in USD
+  examples:
+    CostRequestActual:
+      value:
+        period:
+          start_date: "2021-10-01"
+          end_date: "2021-12-01"
+        granularity: "MONTHLY"
+        type: "ACTUAL"
+    CostResponseActual:
+      value:
+        total: "50.00"
+        results:
+          - period:
+              start_date: "2021-10-01"
+              end_date: "2021-11-01"
+            value: "20.00"
+          - period:
+              start_date: "2021-11-01"
+              end_date: "2021-12-01"
+            value: "30.00"
