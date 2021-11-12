@@ -9,25 +9,28 @@ info:
     
     Provisioned resources under the purview of a mission owner are organized in a three-level hierarchy.
     *Portfolios* consist of one or more applications. *Applications* consist of one or more environments.
-    *Environments* directly contain provisioned resources.  Access can be granted to *operators* at each level.
+    *Environments* directly contain provisioned resources.
 
     * Portfolio
       * Application
         * Environment
 
+    ### Access and security
+
     Although the implementation of these concepts will vary by vendor, adherence to the following principles is expected:
+     - Each Portfolio, Application, and Environment will have isolated security controls
+     - Access can be granted to *Operators* at each level
      - Administrative access to a Portfolio will provide inherited access to all contained Applications
      - Administrative access to an Application will provide inherited access to all contained Environments
-     - Each Application will have isolated security controls
-     - Each Environment will have isolated security controls
      - Actual CSP resources and services (any IaaS or PaaS offerings from the CSP) will be provisioned only within an Environment
 
-    ### Funding sources and cost reporting
+    ### Funding sources
 
-    Portfolios contain one or more funding sources. A funding source consists of a
-    *Task Order* (TO) and a *Contract Line Item Number* (CLIN) on that TO. Task orders contain one or more CLINs.
+    Portfolios contain one or more *Funding Sources*. A funding source consists of a
+    *Task Order* (TO) and a *Contract Line Item Number* (CLIN) on that TO. TOs contain one or more CLINs.
     CLINs specify funding amounts and a time period in which funds can be spent.
 
+    ### Cost reporting
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
@@ -390,7 +393,7 @@ components:
     Portfolio:
       type: object
       description: >-
-        Logical container for a set of cloud resources which are paid for by the same set of Funding Sources / Task Orders.
+        Logical container for a set of cloud resources which are paid for by the same set of Funding Sources.
         Contains a set of Applications, each of which contain a set of Environments in turn, all of which should support
         independent management and access control.
       required:
@@ -430,7 +433,7 @@ components:
     FundingSource:
       type: object
       description: >-
-        A Task Order and CLIN used to pay for JWCC resources.
+        A Task Order and CLIN used to pay for provisioned resources and services
       properties:
         task_order_number:
           type: string
