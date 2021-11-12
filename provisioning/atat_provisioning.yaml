@@ -615,7 +615,7 @@ components:
         total:
           type: string
           description: Total cost (ACTUAL or FORECAST) for entire time period in USD
-          example: "12345.6789"
+          example: "12345.67"
         results:
           type: array
           items:
