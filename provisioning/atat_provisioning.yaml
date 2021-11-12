@@ -4,11 +4,10 @@ info:
     This API is meant for provisioning resources in a JWCC Provider Cloud Environment.
     The cloud products and services used in JWCC are provided by commercial cloud service providers (CSP).
     This API will be implemented and maintained by all participating CSPs.
-    This is a DRAFT version of the API.
 
     ### Organization of provisioned resources
     
-    Provisioned resources under the purvue of a mission owner are organized in a three-level hierarchy.
+    Provisioned resources under the purview of a mission owner are organized in a three-level hierarchy.
 
     * Portfolio
       * Application
