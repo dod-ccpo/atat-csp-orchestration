@@ -24,7 +24,7 @@ info:
     Portfolios contain one or more funding sources. A funding source consists of a
     *Task Order* (TO) and a *Contract Line Item Number* (CLIN) on that TO. Task orders contain one or more CLINs.
     CLINs specify funding amounts and a time period in which funds can be spent.
-    
+
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
@@ -105,6 +105,40 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
+  '/portfolios/{portfolioId}/taskorders':
+    post:
+      tags:
+        - cost
+      summary: Adds a new funding source (TO)
+      description: Adds a new funding source to an existng Portfolio
+      operationId: addFundingSource
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioOperatorRole'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+        '405':
+          description: Invalid input
+      requestBody:
+        description: A Funding Source
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundingSource'
   '/portfolios/{portfolioId}/operator-roles':
     post:
       tags:
