@@ -24,7 +24,7 @@ info:
      - Administrative access to an Application will provide inherited access to all contained Environments
      - Actual CSP resources and services (any IaaS or PaaS offerings from the CSP) will be provisioned only within an Environment
 
-    Operators are specified generically as email/access level tuples. See '#/components/schemas/PortfolioOperatorRole' for an example.
+    Operators are specified generically as email/access level tuples. See [#/components/schemas/PortfolioOperatorRole](#/components/schemas/PortfolioOperatorRole) for an example.
     ATAT will request that individuals (uniquely identified by email address) be granted access to specific resources (Portfolios, Applications or Environments).
     It is expected that CSPs will manage account lifecycle and authorize Operators according to these requests.
 
@@ -70,7 +70,7 @@ paths:
       tags:
         - provisioning
       summary: Adds a new Portfolio
-      description: Adds a new Portfolio to be provisioned, including Applications, Environments, and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Funding Source(s). See '#/info/description' and '#/components/schemas' for details of these constructs.
+      description: Adds a new Portfolio to be provisioned, including Applications, Environments, and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Funding Source(s). See [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of these constructs.
       operationId: addPortfolio
       requestBody:
         description: A new Portfolio
