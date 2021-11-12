@@ -5,7 +5,7 @@ info:
     The cloud products and services used in JWCC are provided by commercial cloud service providers (CSP).
     This API will be implemented and maintained by all participating CSPs.
 
-    ### Organization of provisioned resources
+    ## Organization of provisioned resources
     
     Provisioned resources under the purview of a mission owner are organized in a three-level hierarchy.
     *Portfolios* consist of one or more applications. *Applications* consist of one or more environments.
@@ -15,7 +15,7 @@ info:
       * Application
         * Environment
 
-    ### Access and security
+    ## Access and security
 
     Although the implementation of these concepts will vary by vendor, adherence to the following principles is expected:
      - Each Portfolio, Application, and Environment will have isolated security controls
@@ -24,13 +24,29 @@ info:
      - Administrative access to an Application will provide inherited access to all contained Environments
      - Actual CSP resources and services (any IaaS or PaaS offerings from the CSP) will be provisioned only within an Environment
 
-    ### Funding sources
+    Operators are specified generically as email/access level tuples. See '#/components/schemas/PortfolioOperatorRole' for an example.
+    ATAT will request that individuals (uniquely identified by email address) be granted access to specific resources (Portfolios, Applications or Environments).
+    It is expected that CSPs will manage account lifecycle and authorize Operators according to these requests.
+
+    ### Access levels
+
+    While the details of ATAT's generic access levels will differ by CSP, the following general guidelines apply:
+    
+    #### Portfolio Access Levels
+     - `portfolio_administrator`: Root-level "break-glass" administrator account for all resources and operators under this Portfolio.
+    
+    #### Application and Environment Access Levels
+     - `administrator`: Has full access to all assets under this Application/Environment.
+     - `contributor`: Has access to create, update or remove resources under this Application/Environment. Cannot manage operator access.
+     - `read_only`: Has access to view resources, configurations or logs under this Application/Environment, but cannot make any changes or create new resources.
+
+    ## Funding sources
 
     Portfolios contain one or more *Funding Sources*. A funding source consists of a
     *Task Order* (TO) and a *Contract Line Item Number* (CLIN) on that TO. TOs contain one or more CLINs.
     CLINs specify funding amounts and a time period in which funds can be spent.
 
-    ### Cost reporting
+    ## Cost reporting
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
