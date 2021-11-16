@@ -145,7 +145,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PortfolioOperatorRole'
+                $ref: '#/components/schemas/FundingSource'
         '400':
           description: Invalid ID supplied
         '404':
