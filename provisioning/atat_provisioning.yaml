@@ -379,7 +379,7 @@ paths:
                 $ref: '#/components/schemas/Environment'
       responses:
         '200':
-          description: Cost operation successful
+          description: Environment(s) fully provisioned
           content:
             application/json:
               schema:
