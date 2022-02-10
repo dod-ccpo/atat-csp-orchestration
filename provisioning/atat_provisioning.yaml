@@ -69,7 +69,7 @@ paths:
               description: Endpoint which ATAT should poll to receive status updates for this provisioning job
               schema:
                 type: string
-                example: https://csp.com/jwcc/provisioning/123456789/status
+                example: "https://csp.com/jwcc/provisioning/123456789/status"
         '405':
           description: Invalid input
   '/portfolios/{portfolioId}':
@@ -160,10 +160,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CostResponse'
+                $ref: '#/components/schemas/CostResponseByPortfolio'
               examples:
                 CostResponseActual:
-                  $ref: '#/components/examples/CostResponse'
+                  $ref: '#/components/examples/CostResponseByPortfolio'
         '400':
           description: Invalid ID or query parameters
         '404':
@@ -249,10 +249,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CostResponse'
+                $ref: '#/components/schemas/CostResponseByClin'
               examples:
                 CostResponseActual:
-                  $ref: '#/components/examples/CostResponse'
+                  $ref: '#/components/examples/CostResponseByClin'
         '400':
           description: Invalid ID or query parameters
         '404':
@@ -267,7 +267,7 @@ components:
         id:
           type: string
           description: The ID of the Provisioning job; used for retrieving status to inform end user
-          example: 123456789
+          example: "123456789"
         status:
           type: string
           enum:
@@ -349,7 +349,7 @@ components:
           type: string
           format: date
           example: "2022-07-01"
-    CostResponse:
+    CostResponseByClin:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
         cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
@@ -363,11 +363,37 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CostData'
+    CostResponseByPortfolio:
+      description: >-
+        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
+        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
+        instead. Broken down by each CLIN within each Task Order within the given Portfolio.
+      properties:
+        task_orders:
+          type: array
+          items:
+            properties:
+              task_order_number:
+                type: string
+              clins:
+                type: array
+                items:
+                  properties:
+                    clin_number:
+                      type: string
+                    actual:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CostData'
+                    forecast:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CostData'
     CostData:
       properties:
         total:
           type: string
-          description: Total cost (ACTUAL or FORECAST) for all included time periods in USD
+          description: Total cost (ACTUAL or FORECAST) for all included months in USD
           example: "12345.67"
         results:
           type: array
@@ -375,13 +401,12 @@ components:
             properties:
               month:
                 type: string
-                format: date
                 example: "2022-12"
               value:
                 type: string
-                description: Cost (ACTUAL or FORECAST) for the given time period in USD
+                description: Cost (ACTUAL or FORECAST) for the given months in USD
   examples:
-    CostResponse:
+    CostResponseByClin:
       value:
         actual:
           total: "50.00"
@@ -390,3 +415,36 @@ components:
               value: "20.00"
             - month: "2021-11"
               value: "30.00"
+    CostResponseByPortfolio:
+      value:
+        task_orders:
+          - task_order_number: "1234567891234"
+            clins:
+              - clin_number: "0001"
+                actual:
+                  - total: "50.00"
+                    results:
+                      - month: "2021-12"
+                        value: "20.00"
+                      - month: "2022-01"
+                        value: "30.00"
+                forecast:
+                  - total: "100.00"
+                    results:
+                      - month: "2022-02"
+                        value: "100.00"
+              - clin_number: "0002"
+                actual:
+                  - total: "750.00"
+                    results:
+                      - month: "2021-12"
+                        value: "50.00"
+                      - month: "2022-01"
+                        value: "700.00"
+                forecast:
+                  - total: "1000.00"
+                    results:
+                      - month: "2022-02"
+                        value: "100.00"
+                      - month: "2022-03"
+                        value: "900.00"
