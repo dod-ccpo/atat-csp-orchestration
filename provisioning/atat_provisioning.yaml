@@ -7,11 +7,10 @@ info:
 
     ## Portfolios
 
-    Portfolios represent a logical container for a set of cloud resources which are paid for by a Task Order & its
-    CLINS. It can be thought of as an account at the root of a hierarchy although this term is meant to be agnostic
-    across CSPs. At this time, ATAT does not apply any additional structure to how Mission Owner's resources are
-    organized & secured within their environment; it is entirely left up to them once the Portfolio has been
-    provisioned.
+    Portfolios represent a logical container for a set of cloud resources which are paid for by a Task Order and its
+    CLIN(s). The term is meant to be agnostic across CSPs. A Portfolio can be thought of as an account at the root of a 
+    hierarchy. ATAT does not dictate structure within a Portfolio. Once a Portfolio has been provisioned a Mission Owner 
+    is free to organize and secure resources to satisfy mission requirements.
 
     ## Task Orders
 
