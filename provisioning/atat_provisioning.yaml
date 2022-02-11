@@ -5,52 +5,24 @@ info:
     The cloud products and services used in JWCC are provided by commercial cloud service providers (CSP).
     This API will be implemented and maintained by all participating CSPs.
 
-    ## Organization of provisioned resources
-    
-    Provisioned resources under the purview of a mission owner are organized in a three-level hierarchy.
-    *Portfolios* consist of one or more applications. *Applications* consist of one or more environments.
-    *Environments* directly contain provisioned resources.
+    ## Portfolios
 
-    * Portfolio
-      * Application
-        * Environment
+    Portfolios represent a logical container for a set of cloud resources which are paid for by a Task Order and its
+    CLIN(s). The term is meant to be agnostic across CSPs. A Portfolio can be thought of as an account at the root of a 
+    hierarchy. ATAT does not dictate structure within a Portfolio. Once a Portfolio has been provisioned a Mission Owner 
+    is free to organize and secure resources to satisfy mission requirements.
 
-    ## Access and security
+    ## Task Orders
 
-    Although the implementation of these concepts will vary by vendor, adherence to the following principles is expected:
-     - Each Portfolio, Application, and Environment will have isolated security controls
-     - Access can be granted to *Operators* at each level
-     - Administrative access to a Portfolio will provide inherited access to all contained Applications
-     - Administrative access to an Application will provide inherited access to all contained Environments
-     - Actual CSP resources and services (any IaaS or PaaS offerings from the CSP) will be provisioned only within an Environment
-
-    Operators are specified generically as email/access level tuples. See [#/components/schemas/PortfolioOperatorRole](#/components/schemas/PortfolioOperatorRole) for an example.
-    ATAT will request that individuals (uniquely identified by email address) be granted access to specific resources (Portfolios, Applications or Environments).
-    It is expected that CSPs will manage account lifecycle and authorize Operators according to these requests.
-
-    ### Access levels
-
-    While the details of ATAT's generic access levels will differ by CSP, the following general guidelines apply:
-    
-    #### Portfolio Access Levels
-     - `portfolio_administrator`: Root-level "break-glass" administrator account for all resources and operators under this Portfolio.
-    
-    #### Application and Environment Access Levels
-     - `administrator`: Has full access to all assets under this Application/Environment.
-     - `contributor`: Has access to create, update or remove resources under this Application/Environment. Cannot manage operator access.
-     - `read_only`: Has access to view resources, configurations or logs under this Application/Environment, but cannot make any changes or create new resources.
-
-    ## Funding sources
-
-    Portfolios contain one or more *Funding Sources*. A funding source consists of a
-    *Task Order* (TO) and a *Contract Line Item Number* (CLIN) on that TO. TOs contain one or more CLINs.
-    CLINs specify funding amounts and a time period in which funds can be spent.
+    Portfolios contain one or more *Task Orders* (TO), which in turn contain or more or *Contract Line Item Number*
+    (CLINs). Each have separate Periods of Performance (PoP) dates; CLIN PoP dates will be within the time frames of
+    the Task Order in which they belong.
 
     ## Cost reporting
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 0.1.0
+  version: 0.2.0
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
@@ -70,7 +42,7 @@ paths:
       tags:
         - provisioning
       summary: Adds a new Portfolio
-      description: Adds a new Portfolio to be provisioned, including Applications, Environments, and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Funding Source(s). See [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of these constructs.
+      description: Adds a new Portfolio to be provisioned, including Task Orders and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Task Order(s). See [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of these constructs.
       operationId: addPortfolio
       requestBody:
         description: A new Portfolio
@@ -85,7 +57,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PortfolioResponse'
+                $ref: '#/components/schemas/Portfolio'
         '202':
           description: Portfolio provisioning request has been accepted
           content:
@@ -97,7 +69,7 @@ paths:
               description: Endpoint which ATAT should poll to receive status updates for this provisioning job
               schema:
                 type: string
-                example: https://csp.com/jwcc/provisioning/123456789/status
+                example: "https://csp.com/jwcc/provisioning/123456789/status"
         '405':
           description: Invalid input
   '/portfolios/{portfolioId}':
@@ -105,7 +77,7 @@ paths:
       tags:
         - provisioning
       summary: Gets an existing Portfolio
-      description: Returns a single existing Portfolio, including Applications, Environments, and Operators
+      description: Returns a single existing Portfolio, including Task Orders and Operators
       operationId: getPortfolioById
       parameters:
         - name: portfolioId
@@ -120,18 +92,89 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PortfolioResponse'
+                $ref: '#/components/schemas/Portfolio'
         '400':
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
-  '/portfolios/{portfolioId}/taskorders':
-    post:
+    patch:
+      tags:
+        - access
+      description: >-
+        Updates an existing Portfolio. Currently limited to the `administrators` attribute which will add
+        administrators to an existing Portfolio. Note that this is a strictly additive operation; invitations
+        should be sent to all email addresses included in a request. It is expected that removal of access will occur
+        through native CSP mechanisms rather than via ATAT.
+      operationId: patchPortfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Portfolio successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioPatch'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/cost':
+    get:
       tags:
         - cost
-      summary: Adds a new funding source (TO)
-      description: Adds a new funding source to an existng Portfolio
-      operationId: addFundingSource
+      summary: Returns cost data for a Portfolio, broken down by Task Order & CLINs
+      description: Queries CSP for actual or forecasted cost data across a Portfolio
+      operationId: getCostsByPortfolio
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: Start date of the cost data request
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2021-12-31"
+        - name: end_date
+          in: query
+          description: End date of the cost data request
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12-31"
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CostResponseByPortfolio'
+              examples:
+                CostResponseActual:
+                  $ref: '#/components/examples/CostResponseByPortfolio'
+        '400':
+          description: Invalid ID or query parameters
+        '404':
+          description: Portfolio not found
+  '/portfolios/{portfolioId}/task-orders':
+    post:
+      tags:
+        - provisioning
+      summary: Adds a new Task Order (TO)
+      description: Adds a new Task Order to an existng Portfolio
+      operationId: addTaskOrder
       parameters:
         - name: portfolioId
           in: path
@@ -145,7 +188,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FundingSource'
+                $ref: '#/components/schemas/TaskOrder'
         '400':
           description: Invalid ID supplied
         '404':
@@ -153,122 +196,13 @@ paths:
         '405':
           description: Invalid input
       requestBody:
-        description: A Funding Source
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FundingSource'
-  '/portfolios/{portfolioId}/operator-roles':
-    post:
-      tags:
-        - access
-      summary: Assigns a role to an Operator of the Portfolio
-      description: Assigns a specific level of access to an Operator within a given Portfolio
-      operationId: addPortfolioOperatorRole
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PortfolioOperatorRole'
-        '405':
-          description: Invalid input
-      requestBody:
-        description: A PortfolioOperatorRole that associates the Operator with a specific level of access
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PortfolioOperatorRole'
-  '/portfolios/{portfolioId}/applications/{applicationId}/operator-roles':
-    post:
-      tags:
-        - access
-      summary: Assigns a role to an Operator of the Application
-      description: Assigns a specific level of access to an Operator within a given Application
-      operationId: addApplicationOperatorRole
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the Application
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationOperatorRole'
-        '405':
-          description: Invalid input
-      requestBody:
-        description: An ApplicationOperatorRole that associates the Operator with a specific level of access
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ApplicationOperatorRole'
-  '/portfolios/{portfolioId}/applications/{applicationId}/environments/{environmentId}/operator-roles':
-    post:
-      tags:
-        - access
-      summary: Assigns a role to an Operator of the Environment
-      description: Assigns a specific level of access to an Operator within a given Environment
-      operationId: addEnvironmentOperatorRole
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the Application
-          required: true
-          schema:
-            type: string
-        - name: environmentId
-          in: path
-          description: ID of the Environment
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentOperatorRole'
-        '405':
-          description: Invalid input
-      requestBody:
-        description: An EnvironmentOperatorRole that associates the Operator with a specific level of access
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EnvironmentOperatorRole'
-  '/portfolios/{portfolioId}/taskorders/{taskOrderNumber}/clins/{clin}/cost':
-    post:
+              $ref: '#/components/schemas/TaskOrder'
+  '/portfolios/{portfolioId}/task-orders/{taskOrderNumber}/clins/{clin}/cost':
+    get:
       tags:
         - cost
       summary: Returns cost data by Clin
@@ -293,99 +227,34 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CostRequest'
-            examples:
-              CostRequestActual:
-                $ref: '#/components/examples/CostRequestActual'
+        - name: start_date
+          in: query
+          description: Start date of the cost data request
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2021-12-31"
+        - name: end_date
+          in: query
+          description: End date of the cost data request
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12-31"
       responses:
         '200':
           description: Cost operation successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CostResponse'
+                $ref: '#/components/schemas/CostResponseByClin'
               examples:
                 CostResponseActual:
-                  $ref: '#/components/examples/CostResponseActual'
+                  $ref: '#/components/examples/CostResponseByClin'
         '400':
-          description: Invalid ID supplied
-        '404':
-          description: Portfolio not found
-  '/portfolios/{portfolioId}/applications':
-    post:
-      tags:
-        - provisioning
-      summary: Adds new Applications
-      description: Adds new Applications to be provisioned in an existing Portfolio
-      operationId: addApplications
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Application'
-      responses:
-        '200':
-          description: Application(s) fully provisioned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApplicationsResponse'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Portfolio not found
-  '/portfolios/{portfolioId}/applications/{applicationId}/environments':
-    post:
-      tags:
-        - provisioning
-      summary: Adds new Environments
-      description: Adds new Environments to be provisioned in an existing Application
-      operationId: addEnvironments
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: applicationId
-          in: path
-          description: ID of the Application
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/Environment'
-      responses:
-        '200':
-          description: Environment(s) fully provisioned
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentsResponse'
-        '400':
-          description: Invalid ID supplied
+          description: Invalid ID or query parameters
         '404':
           description: Portfolio not found
 components:
@@ -398,7 +267,7 @@ components:
         id:
           type: string
           description: The ID of the Provisioning job; used for retrieving status to inform end user
-          example: 123456789
+          example: "123456789"
         status:
           type: string
           enum:
@@ -406,263 +275,176 @@ components:
             - "IN_PROGRESS"
             - "COMPLETE"
             - "FAILED"
+    PortfolioPatch:
+      properties:
+        administrators:
+          type: array
+          items:
+            type: string
+            example: "portfolio.admin@mail.mil"
     Portfolio:
-      type: object
+      allOf:
+        - $ref: '#/components/schemas/PortfolioPatch'
       description: >-
-        Logical container for a set of cloud resources which are paid for by the same set of Funding Sources.
-        Contains a set of Applications, each of which contain a set of Environments in turn, all of which should support
-        independent management and access control.
+        Logical container for a set of cloud resources which are paid for by a Task Order & its CLINS.
       required:
         - name
+        - task_orders
+        - administrators
       properties:
         name:
           type: string
           example: "Sample Portfolio name"
-        funding_sources:
+        task_orders:
           type: array
           items:
             allOf:
-              - $ref: '#/components/schemas/FundingSource'
-        applications:
-          type: array
-          items:
-            allOf:
-              - $ref: '#/components/schemas/Application'
-        operator_roles:
-          type: array
-          items:
-            allOf:
-              - $ref: '#/components/schemas/PortfolioOperatorRole'
-    PortfolioResponse:
-      allOf:
-        - $ref: '#/components/schemas/Portfolio'
-        - type: object
-          properties:
-            id:
-              type: string
-              example: "csp-portfolio-id-123"
-            applications:
-              type: array
-              items:
-                allOf:
-                  - $ref: '#/components/schemas/ApplicationResponse'
-    FundingSource:
+              - $ref: '#/components/schemas/TaskOrder'
+        id:
+          type: string
+          readOnly: true
+          example: "csp-portfolio-id-123"
+    TaskOrder:
       type: object
       description: >-
-        A Task Order and CLIN used to pay for provisioned resources and services
+        A Task Order and CLINs used to pay for provisioned resources and services
+      required:
+        - task_order_number
+        - clins
+        - pop_start_date
+        - pop_end_date
       properties:
         task_order_number:
           type: string
           example: "1234567891234"
-        clin:
-          type: string
-          example: "0001"
+        clins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Clin'
         pop_start_date:
+          description: Start of period of performance (for this Task Order)
           type: string
           format: date
           example: "2021-07-01"
         pop_end_date:
+          description: End of period of performance (for this Task Order)
+          type: string
+          format: date
+          example: "2026-07-01"
+    Clin:
+      description: Represents a CLIN in a Task Order
+      additionalProperties: false
+      properties:
+        clin_number:
+          description: Contract Line Item Number (CLIN), 0001 through 9999
+          type: string
+          pattern: '(?!^0{4}$)^\d{4}$'
+        pop_start_date:
+          description: Start of period of performance (for this CLIN)
+          type: string
+          format: date
+          example: "2021-07-01"
+        pop_end_date:
+          description: End of period of performance (for this CLIN)
           type: string
           format: date
           example: "2022-07-01"
-    Application:
-      type: object
+    CostResponseByClin:
       description: >-
-        Applications represent a set of Environments which make up a single
-        application, system or set of related services as defined by a Mission
-        Owner
+        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
+        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
+        instead.
       properties:
-        name:
-          type: string
-          example: "Sample Application name"
-        description:
-          type: string
-          example: "Sample Application description"
-        environments:
+        actual:
           type: array
           items:
-            allOf:
-              - $ref: '#/components/schemas/Environment'
-        operator_roles:
+            $ref: '#/components/schemas/CostData'
+        forecast:
           type: array
           items:
-            allOf:
-              - $ref: '#/components/schemas/ApplicationOperatorRole'
-    ApplicationsResponse:
-      allOf:
-        - type: object
-          properties:
-            portfolioId:
-              type: string
-              example: "csp-portfolio-id-123"
-            applications:
-              type: array
-              items:
-                allOf:
-                  - $ref: '#/components/schemas/ApplicationResponse'
-    ApplicationResponse:
-      allOf:
-        - type: object
-          properties:
-            id:
-              type: string
-              example: "csp-application-id-123"
-            environments:
-              type: array
-              items:
-                allOf:
-                  - $ref: '#/components/schemas/EnvironmentResponse'
-        - $ref: '#/components/schemas/Application'
-    Environment:
-      type: object
+            $ref: '#/components/schemas/CostData'
+    CostResponseByPortfolio:
       description: >-
-        Environments represent a grouping of cloud resources, organized by
-        system usage (e.g. Production, Staging, Test, Dev, etc.)
-      required:
-        - name
+        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
+        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
+        instead. Broken down by each CLIN within each Task Order within the given Portfolio.
       properties:
-        name:
-          type: string
-          example: "Production"
-        operator_roles:
+        task_orders:
           type: array
           items:
-            allOf:
-              - $ref: '#/components/schemas/EnvironmentOperatorRole'
-    EnvironmentsResponse:
-      allOf:
-        - type: object
-          properties:
-            portfolioId:
-              type: string
-              example: "csp-portfolio-id-123"
-            applicationId:
-              type: string
-              example: "csp-application-id-123"
-            environments:
-              type: array
-              items:
-                allOf:
-                  - $ref: '#/components/schemas/EnvironmentResponse'
-    EnvironmentResponse:
-      allOf:
-        - $ref: '#/components/schemas/Environment'
-        - type: object
-          properties:
-            id:
-              type: string
-              example: "csp-environment-id-123"
-    PortfolioOperatorRole:
-      type: object
-      required:
-        - operator_email
-        - access
-      properties:
-        operator_email:
-          type: string
-          example: "portfolio.admin@mail.mil"
-        access:
-          $ref: '#/components/schemas/PortfolioAccess'
-    ApplicationOperatorRole:
-      type: object
-      required:
-        - operator_email
-        - access
-      properties:
-        operator_email:
-          type: string
-          example: "application.user@mail.mil"
-        access:
-          $ref: '#/components/schemas/ApplicationAccess'
-    EnvironmentOperatorRole:
-      type: object
-      required:
-        - operator_email
-        - access
-      properties:
-        operator_email:
-          type: string
-          example: "environment.user@mail.mil"
-        access:
-          $ref: '#/components/schemas/EnvironmentAccess'
-    PortfolioAccess:
-      description: Operator access level to Portfolio
-      type: string
-      enum:
-        - portfolio_administrator
-    ApplicationAccess:
-      description: Operator access level to Application
-      type: string
-      enum:
-        - administrator
-        - contributor
-        - read_only
-    EnvironmentAccess:
-      description: Operator access level to Environment
-      type: string
-      enum:
-        - administrator
-        - contributor
-        - read_only
-    TimePeriod:
-      type: object
-      properties:
-        start_date:
-          type: string
-          format: date
-          example: "2021-10-01"
-        end_date:
-          type: string
-          format: date
-          example: "2021-12-01"
-    CostRequest:
-      type: object
-      properties:
-        period:
-          $ref: '#/components/schemas/TimePeriod'
-        granularity:
-          type: string
-          enum:
-            - "MONTHLY"
-            - "DAILY"
-        type:
-          type: string
-          enum:
-            - "ACTUAL"
-            - "FORECAST"
-    CostResponse:
-      type: object
+            properties:
+              task_order_number:
+                type: string
+              clins:
+                type: array
+                items:
+                  properties:
+                    clin_number:
+                      type: string
+                    actual:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CostData'
+                    forecast:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/CostData'
+    CostData:
       properties:
         total:
           type: string
-          description: Total cost (ACTUAL or FORECAST) for entire time period in USD
+          description: Total cost (ACTUAL or FORECAST) for all included months in USD
           example: "12345.67"
         results:
           type: array
           items:
             properties:
-              period:
-                $ref: '#/components/schemas/TimePeriod'
+              month:
+                type: string
+                example: "2022-12"
               value:
                 type: string
-                description: Cost (ACTUAL or FORECAST) for the given time period in USD
+                description: Cost (ACTUAL or FORECAST) for the given months in USD
   examples:
-    CostRequestActual:
+    CostResponseByClin:
       value:
-        period:
-          start_date: "2021-10-01"
-          end_date: "2021-12-01"
-        granularity: "MONTHLY"
-        type: "ACTUAL"
-    CostResponseActual:
+        actual:
+          total: "50.00"
+          results:
+            - month: "2021-10"
+              value: "20.00"
+            - month: "2021-11"
+              value: "30.00"
+    CostResponseByPortfolio:
       value:
-        total: "50.00"
-        results:
-          - period:
-              start_date: "2021-10-01"
-              end_date: "2021-11-01"
-            value: "20.00"
-          - period:
-              start_date: "2021-11-01"
-              end_date: "2021-12-01"
-            value: "30.00"
+        task_orders:
+          - task_order_number: "1234567891234"
+            clins:
+              - clin_number: "0001"
+                actual:
+                  - total: "50.00"
+                    results:
+                      - month: "2021-12"
+                        value: "20.00"
+                      - month: "2022-01"
+                        value: "30.00"
+                forecast:
+                  - total: "100.00"
+                    results:
+                      - month: "2022-02"
+                        value: "100.00"
+              - clin_number: "0002"
+                actual:
+                  - total: "750.00"
+                    results:
+                      - month: "2021-12"
+                        value: "50.00"
+                      - month: "2022-01"
+                        value: "700.00"
+                forecast:
+                  - total: "1000.00"
+                    results:
+                      - month: "2022-02"
+                        value: "100.00"
+                      - month: "2022-03"
+                        value: "900.00"
