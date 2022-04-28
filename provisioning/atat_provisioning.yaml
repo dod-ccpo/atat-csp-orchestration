@@ -131,10 +131,19 @@ paths:
       description: >-
         Updates an existing Portfolio. Currently limited to the `administrators` attribute which will add
         administrators to an existing Portfolio. Note that this is a strictly additive operation; invitations
-        should be sent to all email addresses included in a request. If an Operator included in this operation
-        already has access to the Portfolio in the target Cloud Environment, their access should be reset
-        (whether via a token, password or other vendor-specific means). It is expected that removal of access will occur
-        through native CSP mechanisms rather than via ATAT.
+        should be sent to all email addresses included in a request. It is expected that removal of access
+        will occur through native CSP mechanisms rather than via ATAT.
+
+        When an Operator included in this operation does not already have access to the Portfolio in the target
+        Cloud Environment and an invitation should be sent to that Operator's email address. ATAT clients should
+        not specify the `needs_reset` flag for Operators that do not already have access; however, ATAT
+        implementations must ignore the flag for such Operators who do not already have access.
+
+        When an Operator included in this operator already has access to the Portfolio in the target Cloud
+        Environment and the `needs_reset` attribute is set to `true`, their access should be reset (whether
+        via a token, password, or other vendor-specific means). When an Operator already has access to the
+        Portfolio in the target Cloud Environment and the `needs_reset` attribute is unspecified or `false`,
+        ATAT implementations must not make changes to the user's access nor perform any resets.
       operationId: patchPortfolio
       parameters:
         - name: portfolioId
@@ -323,8 +332,8 @@ components:
   securitySchemes:
     oidc:
       description: >-
-        Represents an OIDC configuration for an Identity Provider which will be managed by the ATAT Team. ATAT implementations should
-        be configured to accept and validate tokens it.
+        Represents an OIDC configuration for an Identity Provider which will be managed by the ATAT client. ATAT
+        implementations should be configured to accept and validate tokens issued by it.
       type: openIdConnect
       openIdConnectUrl: https://TBD/.well-known/openid-configuration
   schemas:
@@ -445,11 +454,10 @@ components:
           type: boolean
           default: false
     ImpactLevel:
-      description: List of available Imapct Levels for target Cloud Environments
+      description: List of available Impact Levels for target Cloud Environments
       type: string
       enum:
         - IL2
-        - IL3
         - IL4
         - IL5
         - IL6
