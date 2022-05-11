@@ -159,6 +159,13 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+      requestBody:
+        description: A PortfolioPatch object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioPatch'
       responses:
         '200':
           description: Portfolio successfully updated
@@ -335,17 +342,20 @@ components:
         Represents an OIDC configuration for an Identity Provider which will be managed by the ATAT client. ATAT
         implementations should be configured to accept and validate tokens issued by it.
       type: openIdConnect
-      openIdConnectUrl: https://TBD/.well-known/openid-configuration
+      openIdConnectUrl: https://cognito-idp-fips.us-gov-west-1.amazonaws.com/us-gov-west-1_2e6R3aYgi/.well-known/openid-configuration
   schemas:
     ProvisioningStatus:
       type: object
       description: >-
         Represents the status of a provisioning job submitted via POST /portfolios
       properties:
-        id:
+        provisioning_job_id:
           type: string
           description: The ID of the Provisioning job; used for retrieving status to inform end user
           example: "123456789"
+        portfolio_id:
+            type: string
+            description: The ID of the Portfolio for which status is being returned
         status:
           type: string
           enum:
