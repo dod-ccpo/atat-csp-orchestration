@@ -42,7 +42,7 @@ paths:
         - provisioning
       summary: Adds a new Portfolio
       security:
-        - oidc: [write:portfolio]
+        - oidc: [atat/write-portfolio]
       description: Adds a new Portfolio to be provisioned, including Task Orders and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Task Order(s). See [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of these constructs.
       operationId: addPortfolio
       parameters:
@@ -95,7 +95,7 @@ paths:
         - provisioning
       summary: Gets an existing Portfolio
       security:
-        - oidc: [read:portfolio]
+        - oidc: [atat/read-portfolio]
       description: Returns a single existing Portfolio, including Task Orders and Operators
       operationId: getPortfolioById
       parameters:
@@ -127,7 +127,7 @@ paths:
       tags:
         - access
       security:
-        - oidc: [write:portfolio]
+        - oidc: [atat/write-portfolio]
       description: >-
         Updates an existing Portfolio. Currently limited to the `administrators` attribute which will add
         administrators to an existing Portfolio. Note that this is a strictly additive operation; invitations
@@ -183,7 +183,7 @@ paths:
         - cost
       summary: Returns cost data for a Portfolio, broken down by Task Order & CLINs
       security:
-        - oidc: [read:cost]
+        - oidc: [atat/read-cost]
       description: Queries CSP for actual or forecasted cost data across a Portfolio
       operationId: getCostsByPortfolio
       parameters:
@@ -236,7 +236,7 @@ paths:
         - provisioning
       summary: Adds a new Task Order (TO)
       security:
-        - oidc: [write:portfolio]
+        - oidc: [atat/write-portfolio]
       description: Adds a new Task Order to an existng Portfolio
       operationId: addTaskOrder
       parameters:
@@ -276,7 +276,7 @@ paths:
         - cost
       summary: Returns cost data by Clin
       security:
-        - oidc: [read:cost]
+        - oidc: [atat/read-cost]
       description: Queries CSP for actual or forecasted cost data by Clin
       operationId: getCostsByClin
       parameters:
@@ -356,6 +356,12 @@ components:
         however, ATAT servers must accept tokens without an Audience if otherwise valid. ATAT implementations must
         not limit access to specific subjects and must accept a request from a client presenting valid, unexpired,
         properly-scoped token. ATAT servers must ignore unrecognized attributes.
+
+        ## Discovery Configuration
+
+        The openIdConnectUrl below is meant for integration testing purposes only. It is expected to remain stable
+        but may change occasionally. When this occurs, the ATAT Team will coordinate with the community and update this
+        document as quickly as possible.
       type: openIdConnect
       openIdConnectUrl: https://cognito-idp-fips.us-gov-west-1.amazonaws.com/us-gov-west-1_2e6R3aYgi/.well-known/openid-configuration
   schemas:
