@@ -21,7 +21,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 0.2.0
+  version: 0.3.0
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
@@ -41,8 +41,26 @@ paths:
       tags:
         - provisioning
       summary: Adds a new Portfolio
+      security:
+        - oidc: [atat/write-portfolio]
       description: Adds a new Portfolio to be provisioned, including Task Orders and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Task Order(s). See [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of these constructs.
       operationId: addPortfolio
+      parameters:
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Provision-Deadline
+          description: >-
+            Deadline by which the ATAT client expects the Portfolio provisioning process to be complete. Actual values will not be dictated
+            by this specification.
+          in: header
+          schema:
+            type: string
+            format: date-time
       requestBody:
         description: A new Portfolio
         required: true
@@ -69,13 +87,15 @@ paths:
               schema:
                 type: string
                 example: "https://csp.com/atat/provisioning/123456789/status"
-        '405':
+        '400':
           description: Invalid input
   '/portfolios/{portfolioId}':
     get:
       tags:
         - provisioning
       summary: Gets an existing Portfolio
+      security:
+        - oidc: [atat/read-portfolio]
       description: Returns a single existing Portfolio, including Task Orders and Operators
       operationId: getPortfolioById
       parameters:
@@ -85,6 +105,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
       responses:
         '200':
           description: Portfolio successfully retrieved
@@ -99,11 +126,24 @@ paths:
     patch:
       tags:
         - access
+      security:
+        - oidc: [atat/write-portfolio]
       description: >-
         Updates an existing Portfolio. Currently limited to the `administrators` attribute which will add
         administrators to an existing Portfolio. Note that this is a strictly additive operation; invitations
-        should be sent to all email addresses included in a request. It is expected that removal of access will occur
-        through native CSP mechanisms rather than via ATAT.
+        should be sent to all email addresses included in a request. It is expected that removal of access
+        will occur through native CSP mechanisms rather than via ATAT.
+
+        When an Operator included in this operation does not already have access to the Portfolio in the target
+        Cloud Environment and an invitation should be sent to that Operator's email address. ATAT clients should
+        not specify the `needs_reset` flag for Operators that do not already have access; however, ATAT
+        implementations must ignore the flag for such Operators who do not already have access.
+
+        When an Operator included in this operator already has access to the Portfolio in the target Cloud
+        Environment and the `needs_reset` attribute is set to `true`, their access should be reset (whether
+        via a token, password, or other vendor-specific means). When an Operator already has access to the
+        Portfolio in the target Cloud Environment and the `needs_reset` attribute is unspecified or `false`,
+        ATAT implementations must not make changes to the user's access nor perform any resets.
       operationId: patchPortfolio
       parameters:
         - name: portfolioId
@@ -112,6 +152,20 @@ paths:
           required: true
           schema:
             type: string
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
+      requestBody:
+        description: A PortfolioPatch object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PortfolioPatch'
       responses:
         '200':
           description: Portfolio successfully updated
@@ -128,6 +182,8 @@ paths:
       tags:
         - cost
       summary: Returns cost data for a Portfolio, broken down by Task Order & CLINs
+      security:
+        - oidc: [atat/read-cost]
       description: Queries CSP for actual or forecasted cost data across a Portfolio
       operationId: getCostsByPortfolio
       parameters:
@@ -153,6 +209,13 @@ paths:
             type: string
             format: date
             example: "2026-12-31"
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
       responses:
         '200':
           description: Cost operation successful
@@ -172,6 +235,8 @@ paths:
       tags:
         - provisioning
       summary: Adds a new Task Order (TO)
+      security:
+        - oidc: [atat/write-portfolio]
       description: Adds a new Task Order to an existng Portfolio
       operationId: addTaskOrder
       parameters:
@@ -181,6 +246,13 @@ paths:
           required: true
           schema:
             type: string
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
       responses:
         '200':
           description: Successful operation
@@ -192,8 +264,6 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
-        '405':
-          description: Invalid input
       requestBody:
         required: true
         content:
@@ -205,6 +275,8 @@ paths:
       tags:
         - cost
       summary: Returns cost data by Clin
+      security:
+        - oidc: [atat/read-cost]
       description: Queries CSP for actual or forecasted cost data by Clin
       operationId: getCostsByClin
       parameters:
@@ -242,6 +314,13 @@ paths:
             type: string
             format: date
             example: "2026-12-31"
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
       responses:
         '200':
           description: Cost operation successful
@@ -263,10 +342,13 @@ components:
       description: >-
         Represents the status of a provisioning job submitted via POST /portfolios
       properties:
-        id:
+        provisioning_job_id:
           type: string
           description: The ID of the Provisioning job; used for retrieving status to inform end user
           example: "123456789"
+        portfolio_id:
+            type: string
+            description: The ID of the Portfolio for which status is being returned
         status:
           type: string
           enum:
@@ -279,8 +361,7 @@ components:
         administrators:
           type: array
           items:
-            type: string
-            example: "portfolio.admin@mail.mil"
+            $ref: '#/components/schemas/Operator'
     Portfolio:
       allOf:
         - $ref: '#/components/schemas/PortfolioPatch'
@@ -300,9 +381,19 @@ components:
             allOf:
               - $ref: '#/components/schemas/TaskOrder'
         id:
+          description: >-
+            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to construct links back to the
+            provisioned environment, this should be the same ID generated internally for the vendor's Portfolio-equivalent construct.
           type: string
           readOnly: true
           example: "csp-portfolio-id-123"
+        dashboard_link:
+          description: >-
+            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide direct links to
+            a Mission Owner's Portfolio within the vendor's environment.
+          type: string
+          format: uri
+          example: "https://vendor.com/account/csp-portfolio-id-123"
     TaskOrder:
       type: object
       description: >-
@@ -348,6 +439,31 @@ components:
           type: string
           format: date
           example: "2022-07-01"
+    Operator:
+      description: >-
+        Represents an individual who should have access to a Portfolio in a target Cloud Environment.
+      properties:
+        email:
+          type: string
+          format: email
+          example: "portfolio.admin@mail.mil"
+        dod_id:
+          type: string
+          minLength: 10
+          maxLength: 10
+        needs_reset:
+          description: >-
+            Flag which denotes whether the given Operator's access should be updated (password/token reset or other vendor-specific process)
+          type: boolean
+          default: false
+    ImpactLevel:
+      description: List of available Impact Levels for target Cloud Environments
+      type: string
+      enum:
+        - IL2
+        - IL4
+        - IL5
+        - IL6
     CostResponseByClin:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
@@ -447,3 +563,36 @@ components:
                         value: "100.00"
                       - month: "2022-03"
                         value: "900.00"
+  securitySchemes:
+    oidc:
+      description: >-
+        Represents an OIDC configuration for an Identity Provider which will be managed by the ATAT client. ATAT
+        implementations should be configured to accept and validate tokens issued by it. Tokens will not contain
+        information or assertions about end-user identity and should purely be used as a means for authentication
+        of the ATAT client implementation and for authorization of that client's actions. ATAT servers must not
+        assume that any user identities specified in request bodies (such as Mission Owners or administrators)
+        can be authenticated using this identity provider and must only use this Identity Provider for the ATAT
+        CSP API.
+
+        ATAT implementations must leverage the OIDC discovery protocol using the provided URL and must handle
+        key rotation automatically.
+
+        ## Validation
+
+        Tokens may include an Audience and if present, ATAT servers must reject any token with an incorrect Audience;
+        however, ATAT servers must accept tokens without an Audience if otherwise valid. ATAT implementations must
+        not limit access to specific subjects and must accept a request from a client presenting valid, unexpired,
+        properly-scoped token. ATAT servers must ignore unrecognized attributes.
+
+        ## Discovery Configuration
+
+        The openIdConnectUrl below is meant for integration testing purposes only. It is expected to remain stable
+        but may change occasionally. When this occurs, the ATAT Team will coordinate with the community and update this
+        document as quickly as possible.
+      type: openIdConnect
+      openIdConnectUrl: https://cognito-idp-fips.us-gov-west-1.amazonaws.com/us-gov-west-1_2e6R3aYgi/.well-known/openid-configuration
+security:
+  - oidc:
+      - atat/read-cost
+      - atat/read-portfolio
+      - atat/write-portfolio
