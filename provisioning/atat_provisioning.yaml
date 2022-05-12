@@ -336,34 +336,6 @@ paths:
         '404':
           description: Portfolio not found
 components:
-  securitySchemes:
-    oidc:
-      description: >-
-        Represents an OIDC configuration for an Identity Provider which will be managed by the ATAT client. ATAT
-        implementations should be configured to accept and validate tokens issued by it. Tokens will not contain
-        information or assertions about end-user identity and should purely be used as a means for authentication
-        of the ATAT client implementation and for authorization of that client's actions. ATAT servers must not
-        assume that any user identities specified in request bodies (such as Mission Owners or administrators)
-        can be authenticated using this identity provider and must only use this Identity Provider for the ATAT
-        CSP API.
-
-        ATAT implementations must leverage the OIDC discovery protocol using the provided URL and must handle
-        key rotation automatically.
-
-        ## Validation
-
-        Tokens may include an Audience and if present, ATAT servers must reject any token with an incorrect Audience;
-        however, ATAT servers must accept tokens without an Audience if otherwise valid. ATAT implementations must
-        not limit access to specific subjects and must accept a request from a client presenting valid, unexpired,
-        properly-scoped token. ATAT servers must ignore unrecognized attributes.
-
-        ## Discovery Configuration
-
-        The openIdConnectUrl below is meant for integration testing purposes only. It is expected to remain stable
-        but may change occasionally. When this occurs, the ATAT Team will coordinate with the community and update this
-        document as quickly as possible.
-      type: openIdConnect
-      openIdConnectUrl: https://cognito-idp-fips.us-gov-west-1.amazonaws.com/us-gov-west-1_2e6R3aYgi/.well-known/openid-configuration
   schemas:
     ProvisioningStatus:
       type: object
@@ -591,6 +563,34 @@ components:
                         value: "100.00"
                       - month: "2022-03"
                         value: "900.00"
+  securitySchemes:
+    oidc:
+      description: >-
+        Represents an OIDC configuration for an Identity Provider which will be managed by the ATAT client. ATAT
+        implementations should be configured to accept and validate tokens issued by it. Tokens will not contain
+        information or assertions about end-user identity and should purely be used as a means for authentication
+        of the ATAT client implementation and for authorization of that client's actions. ATAT servers must not
+        assume that any user identities specified in request bodies (such as Mission Owners or administrators)
+        can be authenticated using this identity provider and must only use this Identity Provider for the ATAT
+        CSP API.
+
+        ATAT implementations must leverage the OIDC discovery protocol using the provided URL and must handle
+        key rotation automatically.
+
+        ## Validation
+
+        Tokens may include an Audience and if present, ATAT servers must reject any token with an incorrect Audience;
+        however, ATAT servers must accept tokens without an Audience if otherwise valid. ATAT implementations must
+        not limit access to specific subjects and must accept a request from a client presenting valid, unexpired,
+        properly-scoped token. ATAT servers must ignore unrecognized attributes.
+
+        ## Discovery Configuration
+
+        The openIdConnectUrl below is meant for integration testing purposes only. It is expected to remain stable
+        but may change occasionally. When this occurs, the ATAT Team will coordinate with the community and update this
+        document as quickly as possible.
+      type: openIdConnect
+      openIdConnectUrl: https://cognito-idp-fips.us-gov-west-1.amazonaws.com/us-gov-west-1_2e6R3aYgi/.well-known/openid-configuration
 security:
   - oidc:
       - atat/read-cost
