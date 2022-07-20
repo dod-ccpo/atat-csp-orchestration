@@ -76,7 +76,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Portfolio'
         '202':
-          description: Portfolio provisioning request has been accepted
+          description: Provisioning request has been accepted
           content:
             application/json:
               schema:
@@ -184,7 +184,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PortfolioPatch'
         '202':
-          description: Portfolio provisioning request has been accepted
+          description: Provisioning request has been accepted
           content:
             application/json:
               schema:
@@ -293,7 +293,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TaskOrder'
         '202':
-          description: Portfolio provisioning request has been accepted
+          description: Provisioning request has been accepted
           content:
             application/json:
               schema:
