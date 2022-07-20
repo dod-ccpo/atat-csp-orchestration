@@ -83,7 +83,9 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
           headers:
             Location:
-              description: Endpoint which ATAT should poll to receive status updates for this provisioning job
+              description: >-
+                Endpoint which ATAT should poll to receive status updates for this provisioning job.
+                Data at this endpoint must be a valid ProvisioningStatus response.
               schema:
                 type: string
                 example: "https://csp.com/atat/provisioning/123456789/status"
@@ -189,7 +191,9 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
           headers:
             Location:
-              description: Endpoint which ATAT should poll to receive status updates for this provisioning job
+              description: >-
+                Endpoint which ATAT should poll to receive status updates for this provisioning job.
+                Data at this endpoint must be a valid ProvisioningStatus response.
               schema:
                 type: string
                 example: "https://csp.com/atat/provisioning/123456789/status"
@@ -296,7 +300,9 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
           headers:
             Location:
-              description: Endpoint which ATAT should poll to receive status updates for this provisioning job
+              description: >-
+                Endpoint which ATAT should poll to receive status updates for this provisioning job.
+                Data at this endpoint must be a valid ProvisioningStatus response.
               schema:
                 type: string
                 example: "https://csp.com/atat/provisioning/123456789/status"
