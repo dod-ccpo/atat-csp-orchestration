@@ -310,7 +310,7 @@ paths:
         '400':
           description: Invalid ID supplied
         '404':
-          description: Portfolio or Task Orderback  not found
+          description: Portfolio or Task Order not found
       requestBody:
         required: true
         content:
@@ -457,7 +457,7 @@ components:
         - pop_end_date
       properties:
         id:
-          description: Represents the unqiue ID of a Task Order. Must be defined by CSPs upon object creation.
+          description: Represents the unique ID of a Task Order. Must be defined by CSPs upon object creation.
           type: string
           readOnly: true
           example: "csp-portfolio-id-123"
