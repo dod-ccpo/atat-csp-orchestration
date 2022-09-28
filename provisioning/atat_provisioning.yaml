@@ -21,7 +21,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 0.3.0
+  version: 0.4.0
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
@@ -87,6 +87,7 @@ paths:
               schema:
                 type: string
                 example: "https://csp.com/atat/provisioning/123456789/status"
+              required: true
         '400':
           description: Invalid input
   '/portfolios/{portfolioId}':
@@ -237,7 +238,7 @@ paths:
       summary: Adds a new Task Order (TO)
       security:
         - oidc: [atat/write-portfolio]
-      description: Adds a new Task Order to an existng Portfolio
+      description: Adds a new Task Order to an existing Portfolio
       operationId: addTaskOrder
       parameters:
         - name: portfolioId
@@ -270,14 +271,60 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TaskOrder'
-  '/portfolios/{portfolioId}/task-orders/{taskOrderNumber}/clins/{clin}/cost':
+  '/portfolios/{portfolioId}/task-orders/{taskOrderId}':
+    put:
+      tags:
+        - provisioning
+      summary: Updates an existing Task Order (TO)
+      security:
+        - oidc: [atat/write-portfolio]
+      description: Updates an existing Task Order (TO)
+      operationId: updateTaskOrder
+      parameters:
+        - name: portfolioId
+          in: path
+          description: ID of the Portfolio
+          required: true
+          schema:
+            type: string
+        - name: taskOrderId
+          in: path
+          description: ID of the Task Order
+          required: true
+          schema:
+            type: string
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskOrder'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio or Task Order not found
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskOrder'
+  '/portfolios/{portfolioId}/task-orders/{taskOrderId}/clins/{clin}/cost':
     get:
       tags:
         - cost
-      summary: Returns cost data by Clin
+      summary: Returns cost data by CLIN
       security:
         - oidc: [atat/read-cost]
-      description: Queries CSP for actual or forecasted cost data by Clin
+      description: Queries CSP for actual or forecasted cost data by CLIN
       operationId: getCostsByClin
       parameters:
         - name: portfolioId
@@ -286,9 +333,9 @@ paths:
           required: true
           schema:
             type: string
-        - name: taskOrderNumber
+        - name: taskOrderId
           in: path
-          description: task order number
+          description: ID of the Task Order
           required: true
           schema:
             type: string
@@ -341,14 +388,18 @@ components:
       type: object
       description: >-
         Represents the status of a provisioning job submitted via POST /portfolios
+      required:
+        - provisioning_job_id
+        - portfolio_id
+        - status
       properties:
         provisioning_job_id:
           type: string
           description: The ID of the Provisioning job; used for retrieving status to inform end user
           example: "123456789"
         portfolio_id:
-            type: string
-            description: The ID of the Portfolio for which status is being returned
+          type: string
+          description: The ID of the Portfolio for which status is being returned
         status:
           type: string
           enum:
@@ -366,11 +417,13 @@ components:
       allOf:
         - $ref: '#/components/schemas/PortfolioPatch'
       description: >-
-        Logical container for a set of cloud resources which are paid for by a Task Order & its CLINS.
+        Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs.
       required:
+        - id
         - name
         - task_orders
         - administrators
+        - dashboard_link
       properties:
         name:
           type: string
@@ -382,15 +435,13 @@ components:
               - $ref: '#/components/schemas/TaskOrder'
         id:
           description: >-
-            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to construct links back to the
-            provisioned environment, this should be the same ID generated internally for the vendor's Portfolio-equivalent construct.
+            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to construct links back to the provisioned environment, this should be the same ID generated internally for the vendor's Portfolio-equivalent construct.
           type: string
           readOnly: true
           example: "csp-portfolio-id-123"
         dashboard_link:
           description: >-
-            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide direct links to
-            a Mission Owner's Portfolio within the vendor's environment.
+            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide direct links to a Mission Owner's Portfolio within the vendor's environment.
           type: string
           format: uri
           example: "https://vendor.com/account/csp-portfolio-id-123"
@@ -399,11 +450,17 @@ components:
       description: >-
         A Task Order and CLINs used to pay for provisioned resources and services
       required:
+        - id
         - task_order_number
         - clins
         - pop_start_date
         - pop_end_date
       properties:
+        id:
+          description: Represents the unique ID of a Task Order. Must be defined by CSPs upon object creation.
+          type: string
+          readOnly: true
+          example: "csp-portfolio-id-123"
         task_order_number:
           type: string
           example: "1234567891234"
@@ -424,6 +481,10 @@ components:
     Clin:
       description: Represents a CLIN in a Task Order
       additionalProperties: false
+      required:
+        - clin_number
+        - pop_start_date
+        - pop_end_date
       properties:
         clin_number:
           description: Contract Line Item Number (CLIN), 0001 through 9999
@@ -442,6 +503,10 @@ components:
     Operator:
       description: >-
         Represents an individual who should have access to a Portfolio in a target Cloud Environment.
+      required:
+        - email
+        - dod_id
+        - needs_reset
       properties:
         email:
           type: string
@@ -464,11 +529,15 @@ components:
         - IL4
         - IL5
         - IL6
+        - TS
     CostResponseByClin:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
         cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
         instead.
+      required:
+        - actual
+        - forecast
       properties:
         actual:
           type: array
@@ -483,6 +552,8 @@ components:
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
         cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
         instead. Broken down by each CLIN within each Task Order within the given Portfolio.
+      required:
+        - task_orders
       properties:
         task_orders:
           type: array
@@ -505,6 +576,9 @@ components:
                       items:
                         $ref: '#/components/schemas/CostData'
     CostData:
+      required:
+        - total
+        - results
       properties:
         total:
           type: string
