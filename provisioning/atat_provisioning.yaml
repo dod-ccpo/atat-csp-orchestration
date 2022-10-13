@@ -61,6 +61,15 @@ paths:
           schema:
             type: string
             format: date-time
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       requestBody:
         description: A new Portfolio
         required: true
@@ -113,6 +122,15 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: Portfolio successfully retrieved
@@ -160,6 +178,15 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       requestBody:
         description: A PortfolioPatch object
         required: true
@@ -217,6 +244,15 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: Cost operation successful
@@ -254,6 +290,15 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -300,6 +345,15 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -368,6 +422,15 @@ paths:
           in: header
           schema:
             $ref: '#/components/schemas/ImpactLevel'
+        - name: X-Atat-Api-Version
+          description: >-
+            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+            expected API version. If not provided by the client, the server should assume the client supports the latest
+            version of this specification.
+          in: header
+          schema:
+            type: string
       responses:
         '200':
           description: Cost operation successful
