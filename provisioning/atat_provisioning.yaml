@@ -540,13 +540,9 @@ components:
         - forecast
       properties:
         actual:
-          type: array
-          items:
-            $ref: '#/components/schemas/CostData'
+          $ref: '#/components/schemas/CostData'
         forecast:
-          type: array
-          items:
-            $ref: '#/components/schemas/CostData'
+          $ref: '#/components/schemas/CostData'
     CostResponseByPortfolio:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
@@ -568,13 +564,9 @@ components:
                     clin_number:
                       type: string
                     actual:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/CostData'
+                      $ref: '#/components/schemas/CostData'
                     forecast:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/CostData'
+                      $ref: '#/components/schemas/CostData'
     CostData:
       required:
         - total
@@ -611,32 +603,32 @@ components:
             clins:
               - clin_number: "0001"
                 actual:
-                  - total: "50.00"
-                    results:
-                      - month: "2021-12"
-                        value: "20.00"
-                      - month: "2022-01"
-                        value: "30.00"
+                  total: "50.00"
+                  results:
+                    - month: "2021-12"
+                      value: "20.00"
+                    - month: "2022-01"
+                      value: "30.00"
                 forecast:
-                  - total: "100.00"
-                    results:
-                      - month: "2022-02"
-                        value: "100.00"
+                  total: "100.00"
+                  results:
+                    - month: "2022-02"
+                      value: "100.00"
               - clin_number: "0002"
                 actual:
-                  - total: "750.00"
-                    results:
-                      - month: "2021-12"
-                        value: "50.00"
-                      - month: "2022-01"
-                        value: "700.00"
+                  total: "750.00"
+                  results:
+                    - month: "2021-12"
+                      value: "50.00"
+                    - month: "2022-01"
+                      value: "700.00"
                 forecast:
-                  - total: "1000.00"
-                    results:
-                      - month: "2022-02"
-                        value: "100.00"
-                      - month: "2022-03"
-                        value: "900.00"
+                  total: "1000.00"
+                  results:
+                    - month: "2022-02"
+                      value: "100.00"
+                    - month: "2022-03"
+                      value: "900.00"
   securitySchemes:
     oidc:
       description: >-
