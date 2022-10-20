@@ -92,7 +92,9 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
           headers:
             Location:
-              description: Endpoint which ATAT should poll to receive status updates for this provisioning job
+              description: >-
+                Endpoint which ATAT should poll to receive status updates for this provisioning job.
+                This must be the getProvisioningStatus endpoint for this creation request.
               schema:
                 type: string
                 example: "https://csp.com/atat/provisioning/123456789/status"
@@ -445,6 +447,46 @@ paths:
           description: Invalid ID or query parameters
         '404':
           description: Portfolio not found
+  '/provisioning/{provisioningJobId}/status':
+    get:
+      tags:
+        - provisioning
+      summary: Get the status of a previously issued provisioning job
+      security:
+        - oidc: [atat/read-portfolio]
+      description: >-
+        Queries the CSP for the status of a previously issued provisioning job for which
+        that CSP issued an HTTP 202 response, indicating that the provisioning job was accepted
+        but a response was not available immediately. This allows continuously checking the status
+        to inform the end user.
+
+        The provisioning job ID must be unique across all provisioning jobs and must never be
+        reused; however, a provisioning job ID must be queryable for at least 168 but no more than
+        240 hours.
+      operationId: getProvisioningStatus
+      parameters:
+        - name: portfolioId
+          in: path
+          description: The ID of the provisioning job
+          required: true
+          schema:
+            type: string
+        - name: X-Target-Impact-Level
+          description: >-
+            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
+            more specific environment if more than one is available at a given endpoint.
+          in: header
+          schema:
+            $ref: '#/components/schemas/ImpactLevel'
+      responses:
+        '200':
+          description: Get provisioning status successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisioningStatus'
+        '404':
+          description: Provisioning Job ID not found
 components:
   schemas:
     ProvisioningStatus:
@@ -458,7 +500,9 @@ components:
       properties:
         provisioning_job_id:
           type: string
-          description: The ID of the Provisioning job; used for retrieving status to inform end user
+          description: >-
+            The ID of the Provisioning job; used for retrieving status to inform end user. This
+            idea must be unique across all provisioning jobs across portfolios.
           example: "123456789"
         portfolio_id:
           type: string
