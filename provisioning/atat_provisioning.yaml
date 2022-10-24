@@ -43,7 +43,12 @@ paths:
       summary: Adds a new Portfolio
       security:
         - oidc: [atat/write-portfolio]
-      description: Adds a new Portfolio to be provisioned, including Task Orders and Operators. Once provisioned, Operators can log in to the CSP and begin using provisioned resources and services, funded by the provided Task Order(s). See [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of these constructs.
+      description: >-
+        Adds a new Portfolio to be provisioned, including Task Orders and Operators. Once provisioned, Operators can
+        log in to the CSP and begin using provisioned resources and services, funded by the provided Task Order(s).
+        Note that invitations should be sent to all Operator email addresses included in the request. See
+        [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of
+        these constructs.
       operationId: addPortfolio
       parameters:
         - name: X-Target-Impact-Level
@@ -465,7 +470,7 @@ paths:
         240 hours.
       operationId: getProvisioningStatus
       parameters:
-        - name: portfolioId
+        - name: provisioningJobId
           in: path
           description: The ID of the provisioning job
           required: true
@@ -495,7 +500,6 @@ components:
         Represents the status of a provisioning job submitted via POST /portfolios
       required:
         - provisioning_job_id
-        - portfolio_id
         - status
       properties:
         provisioning_job_id:
