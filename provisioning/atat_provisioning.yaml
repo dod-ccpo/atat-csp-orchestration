@@ -470,7 +470,7 @@ paths:
         240 hours.
       operationId: getProvisioningStatus
       parameters:
-        - name: portfolioId
+        - name: provisioningJobId
           in: path
           description: The ID of the provisioning job
           required: true
