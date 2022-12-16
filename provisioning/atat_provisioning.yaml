@@ -60,8 +60,8 @@ paths:
             $ref: '#/components/schemas/ImpactLevel'
         - name: X-Provision-Deadline
           description: >-
-            Deadline by which the ATAT client expects the Portfolio provisioning process to be complete. Actual values will not be dictated
-            by this specification.
+            The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
+            by the following values: UNCLASS - 2 HOURS | SIPR - 24 HOURS | TS - 24 HOURS
           in: header
           schema:
             type: string
@@ -233,7 +233,13 @@ paths:
       summary: Returns cost data for a Portfolio, broken down by Task Order & CLINs
       security:
         - oidc: [atat/read-cost]
-      description: Queries CSP for actual or forecasted cost data across a Portfolio
+      description: >-
+        Queries CSP for actual or forecasted cost data across a Portfolio. Queries should return data for all months
+        included in date ranges. For example, a start_date of "2022-01-25" and end_date of "2022-03-02" should return
+        data for January, February and March. In addition, queries which include the current month should provide
+        the most up-to-date actual costs available while the forecast data would contain the remainder for that month.
+        For example, if a Portfolio spends about $50/month and the current date is "2022-03-15", the actual & forecast
+        entries for "2022-03" would both be about $25.
       operationId: getCostsByPortfolio
       parameters:
         - name: portfolioId
