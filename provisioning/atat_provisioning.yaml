@@ -21,7 +21,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 0.4.0
+  version: 1.0.0
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
@@ -61,7 +61,7 @@ paths:
         - name: X-Provision-Deadline
           description: >-
             The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
-            by the following values: UNCLASS - 2 HOURS | SIPR - 24 HOURS | TS - 24 HOURS
+            by the following values: UNCLASS - 1 HOUR | SIPR - 72 HOURS | TS - 72 HOURS
           in: header
           schema:
             type: string
@@ -222,10 +222,8 @@ paths:
       description: >-
         Queries CSP for actual or forecasted cost data across a Portfolio. Queries should return data for all months
         included in date ranges. For example, a start_date of "2022-01-25" and end_date of "2022-03-02" should return
-        data for January, February and March. In addition, queries which include the current month should provide
-        the most up-to-date actual costs available while the forecast data would contain the remainder for that month.
-        For example, if a Portfolio spends about $50/month and the current date is "2022-03-15", the actual & forecast
-        entries for "2022-03" would both be about $25.
+        data for January, February and March. It is expected that actual results will be provided for all months which
+        have been invoiced while forecast data will be provided for all future months.
       operationId: getCostsByPortfolio
       parameters:
         - name: portfolioId
@@ -236,7 +234,9 @@ paths:
             type: string
         - name: start_date
           in: query
-          description: Start date of the cost data request
+          description: >-
+            Start date of the cost data request. Must not precede the earliest pop_start_date of the given Portfolio's
+            Task Orders.
           required: true
           schema:
             type: string
@@ -244,7 +244,9 @@ paths:
             example: "2021-12-31"
         - name: end_date
           in: query
-          description: End date of the cost data request
+          description: >-
+            End date of the cost data request. Must not succeed the latest pop_end_date of the given Portfolio's
+            Task Orders.
           required: true
           schema:
             type: string
@@ -414,7 +416,7 @@ paths:
             type: string
         - name: start_date
           in: query
-          description: Start date of the cost data request
+          description: Start date of the cost data request. Must not precede the earliest pop_start_date of the given CLIN.
           required: true
           schema:
             type: string
@@ -422,7 +424,7 @@ paths:
             example: "2021-12-31"
         - name: end_date
           in: query
-          description: End date of the cost data request
+          description: End date of the cost data request. Must not succeed the latest pop_end_date of the given CLIN.
           required: true
           schema:
             type: string
