@@ -416,7 +416,7 @@ paths:
             type: string
         - name: start_date
           in: query
-          description: Start date of the cost data request. Must not precede the earliest pop_start_date of this Clin.
+          description: Start date of the cost data request. Must not precede the earliest pop_start_date of the given CLIN.
           required: true
           schema:
             type: string
@@ -424,7 +424,7 @@ paths:
             example: "2021-12-31"
         - name: end_date
           in: query
-          description: End date of the cost data request. Must not suceed the latest pop_end_date of this Clin.
+          description: End date of the cost data request. Must not succeed the latest pop_end_date of the given CLIN.
           required: true
           schema:
             type: string
