@@ -21,7 +21,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 0.4.0
+  version: 1.0.0
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
@@ -60,8 +60,8 @@ paths:
             $ref: '#/components/schemas/ImpactLevel'
         - name: X-Provision-Deadline
           description: >-
-            Deadline by which the ATAT client expects the Portfolio provisioning process to be complete. Actual values will not be dictated
-            by this specification.
+            The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
+            by the following values: UNCLASS - 1 HOUR | SIPR - 72 HOURS | TS - 72 HOURS
           in: header
           schema:
             type: string
@@ -208,20 +208,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PortfolioPatch'
-        '202':
-          description: Provisioning request has been accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProvisioningStatus'
-          headers:
-            Location:
-              description: >-
-                Endpoint which ATAT should poll to receive status updates for this provisioning job.
-                Data at this endpoint must be a valid ProvisioningStatus response.
-              schema:
-                type: string
-                example: "https://csp.com/atat/provisioning/123456789/status"
         '400':
           description: Invalid ID supplied
         '404':
@@ -233,7 +219,11 @@ paths:
       summary: Returns cost data for a Portfolio, broken down by Task Order & CLINs
       security:
         - oidc: [atat/read-cost]
-      description: Queries CSP for actual or forecasted cost data across a Portfolio
+      description: >-
+        Queries CSP for actual or forecasted cost data across a Portfolio. Queries should return data for all months
+        included in date ranges. For example, a start_date of "2022-01-25" and end_date of "2022-03-02" should return
+        data for January, February and March. It is expected that actual results will be provided for all months which
+        have been invoiced while forecast data will be provided for all future months.
       operationId: getCostsByPortfolio
       parameters:
         - name: portfolioId
@@ -244,7 +234,9 @@ paths:
             type: string
         - name: start_date
           in: query
-          description: Start date of the cost data request
+          description: >-
+            Start date of the cost data request. Must not precede the earliest pop_start_date of the given Portfolio's
+            Task Orders.
           required: true
           schema:
             type: string
@@ -252,7 +244,9 @@ paths:
             example: "2021-12-31"
         - name: end_date
           in: query
-          description: End date of the cost data request
+          description: >-
+            End date of the cost data request. Must not succeed the latest pop_end_date of the given Portfolio's
+            Task Orders.
           required: true
           schema:
             type: string
@@ -327,20 +321,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TaskOrder'
-        '202':
-          description: Provisioning request has been accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProvisioningStatus'
-          headers:
-            Location:
-              description: >-
-                Endpoint which ATAT should poll to receive status updates for this provisioning job.
-                Data at this endpoint must be a valid ProvisioningStatus response.
-              schema:
-                type: string
-                example: "https://csp.com/atat/provisioning/123456789/status"
         '400':
           description: Invalid ID supplied
         '404':
@@ -436,7 +416,7 @@ paths:
             type: string
         - name: start_date
           in: query
-          description: Start date of the cost data request
+          description: Start date of the cost data request. Must not precede the earliest pop_start_date of the given CLIN.
           required: true
           schema:
             type: string
@@ -444,7 +424,7 @@ paths:
             example: "2021-12-31"
         - name: end_date
           in: query
-          description: End date of the cost data request
+          description: End date of the cost data request. Must not succeed the latest pop_end_date of the given CLIN.
           required: true
           schema:
             type: string
