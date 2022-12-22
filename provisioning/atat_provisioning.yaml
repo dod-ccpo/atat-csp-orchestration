@@ -21,7 +21,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.0.0
+  version: 1.0.1
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
@@ -61,7 +61,7 @@ paths:
         - name: X-Provision-Deadline
           description: >-
             The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
-            by the following values: UNCLASS - 1 HOUR | SIPR - 72 HOURS | TS - 72 HOURS
+            by the following values: UNCLASS - 2 HOURS | SIPR - 72 HOURS | TS - 72 HOURS
           in: header
           schema:
             type: string
