@@ -21,7 +21,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.0.1
+  version: 1.0.2
   title: ATAT CSP API
   contact:
     email: atat-dev+provisioning_api@ccpo.mil
