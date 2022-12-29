@@ -560,8 +560,11 @@ components:
           example: "csp-portfolio-id-123"
         dashboard_link:
           description: >-
-            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide direct links to a Mission Owner's Portfolio within the vendor's environment.
+            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide
+            direct links to a Mission Owner's Portfolio within the vendor's environment. Will NOT be supplied by the
+            ATAT Client on initial POST /portfolios, but is expected to be provided upon successful Portfolio creation.
           type: string
+          readOnly: true
           format: uri
           example: "https://vendor.com/account/csp-portfolio-id-123"
     TaskOrder:
@@ -581,6 +584,9 @@ components:
           readOnly: true
           example: "csp-portfolio-id-123"
         task_order_number:
+          description: >-
+            Represents the current Task Order Number. Subject to change over the lifetime of a Task Order. Should be
+            considered metadata rather than a primary key (use the `id` instead).
           type: string
           example: "1234567891234"
         clins:
@@ -674,6 +680,8 @@ components:
           type: array
           items:
             properties:
+              task_order_id:
+                type: string
               task_order_number:
                 type: string
               clins:
