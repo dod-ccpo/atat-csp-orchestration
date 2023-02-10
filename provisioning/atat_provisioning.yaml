@@ -501,7 +501,7 @@ components:
     ProvisioningStatus:
       type: object
       description: >-
-        Represents the status of a provisioning job submitted via POST /portfolios
+        Represents the status of a provisioning job
       required:
         - provisioning_job_id
         - status
@@ -521,10 +521,10 @@ components:
         status:
           type: string
           enum:
-            - "NOT_STARTED"
-            - "IN_PROGRESS"
-            - "COMPLETE"
-            - "FAILED"
+            - NOT_STARTED
+            - IN_PROGRESS
+            - COMPLETE
+            - FAILED
     PortfolioCreate:
       description: >-
         Version of Portfolio used for initial Portfolio creation. Does not include Environments.
@@ -535,7 +535,9 @@ components:
       properties:
         id:
           description: >-
-            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to construct links back to the provisioned environment, this should be the same ID generated internally for the vendor's Portfolio-equivalent construct.
+            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to
+            construct links back to the provisioned environment, this should be the same ID generated internally for
+            the vendor's Portfolio-equivalent construct.
           type: string
           readOnly: true
           example: "csp-portfolio-id-123"
@@ -587,7 +589,7 @@ components:
             the vendor's Portfolio-equivalent construct.
           type: string
           readOnly: true
-          example: "csp-portfolio-id-123"
+          example: "csp-environment-id-123"
         name:
           type: string
           example: "Sample Environment name"
@@ -599,7 +601,7 @@ components:
           type: string
           readOnly: true
           format: uri
-          example: "https://vendor.com/account/csp-portfolio-id-123"
+          example: "https://vendor.com/account/csp-portfolio-id-123/environment/csp-environment-id-123"
         classification_level:
           $ref: '#/components/schemas/ClassificationLevel'
         cloud_distinguisher:
@@ -631,7 +633,7 @@ components:
           description: Represents the unique ID of a Task Order. Must be defined by CSPs upon object creation.
           type: string
           readOnly: true
-          example: "csp-portfolio-id-123"
+          example: "csp-task-order-id-123"
         task_order_number:
           description: >-
             Represents the current Task Order Number. Subject to change over the lifetime of a Task Order. Should be
@@ -672,8 +674,8 @@ components:
             Distinguishes a "cloud" CLIN, which directly funds cloud workloads, from "non-cloud" CLINs, which do not.
           type: string
           enum:
-            - cloud
-            - non_cloud
+            - CLOUD
+            - NON_CLOUD
         classification_level:
           $ref: '#/components/schemas/ClassificationLevel'
         pop_start_date:
@@ -713,9 +715,9 @@ components:
         should result in a HTTP 400.
       type: string
       enum:
-        - unclassified
-        - secret
-        - top_secret
+        - UNCLASSIFIED
+        - SECRET
+        - TOP_SECRET
     CostResponseByClin:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
