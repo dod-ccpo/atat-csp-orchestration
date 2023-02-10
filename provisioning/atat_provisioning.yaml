@@ -6,10 +6,15 @@ info:
 
     ## Portfolios
 
-    Portfolios represent a logical container for a set of cloud resources which are paid for by a Task Order and its
-    CLIN(s). The term is meant to be agnostic across CSPs. A Portfolio can be thought of as an account at the root of a 
-    hierarchy. ATAT does not dictate structure within a Portfolio. Once a Portfolio has been provisioned a Mission Owner 
-    is free to organize and secure resources to satisfy mission requirements.
+    Portfolios represent a logical container for a group of related Environments and the Task Orders/CLINs which fund
+    them. As a general rule, everything within a given Portfolio is part of the same overall Mission or Program.
+
+    ## Environments
+
+    Environments represent a logical container for a set of cloud resources which are funded by a particular CLIN within
+    a Task Order. The term is meant to be agnostic across CSPs. An Environment can be thought of as an account at the
+    root of a hierarchy. ATAT does not dictate structure within a Portfolio. Once an Environment has been provisioned a
+    Mission Owner is free to organize and secure resources to satisfy mission requirements.
 
     ## Task Orders
 
@@ -21,22 +26,24 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.0.2
+  version: 1.1.0
   title: ATAT CSP API
   contact:
-    email: atat-dev+provisioning_api@ccpo.mil
+    email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
 tags:
   - name: access
     description: >-
-      Operations to manage access to provisioned Portfolios
+      Operations to manage access to provisioned Environments
   - name: cost
     description: >-
       Operations to query for actual and forecasted costs
   - name: provisioning
     description: >-
-      Operations to manage provisioned Portfolios
+      Operations to manage provisioned Environments
 paths:
   '/portfolios':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
     post:
       tags:
         - provisioning
@@ -50,63 +57,26 @@ paths:
         [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of
         these constructs.
       operationId: addPortfolio
-      parameters:
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Provision-Deadline
-          description: >-
-            The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
-            by the following values: UNCLASS - 2 HOURS | SIPR - 72 HOURS | TS - 72 HOURS
-          in: header
-          schema:
-            type: string
-            format: date-time
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       requestBody:
         description: A new Portfolio
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Portfolio'
+              $ref: '#/components/schemas/PortfolioCreate'
       responses:
         '200':
-          description: Portfolio fully provisioned
+          description: Portfolio response object
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Portfolio'
-        '202':
-          description: Provisioning request has been accepted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProvisioningStatus'
-          headers:
-            Location:
-              description: >-
-                Endpoint which ATAT should poll to receive status updates for this provisioning job.
-                This must be the getProvisioningStatus endpoint for this creation request.
-              schema:
-                type: string
-                example: "https://csp.com/atat/provisioning/123456789/status"
-              required: true
+                $ref: '#/components/schemas/PortfolioCreate'
         '400':
           description: Invalid input
   '/portfolios/{portfolioId}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     get:
       tags:
         - provisioning
@@ -115,29 +85,6 @@ paths:
         - oidc: [atat/read-portfolio]
       description: Returns a single existing Portfolio, including Task Orders and Operators
       operationId: getPortfolioById
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Portfolio successfully retrieved
@@ -149,70 +96,10 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
-    patch:
-      tags:
-        - access
-      security:
-        - oidc: [atat/write-portfolio]
-      description: >-
-        Updates an existing Portfolio. Currently limited to the `administrators` attribute which will add
-        administrators to an existing Portfolio. Note that this is a strictly additive operation; invitations
-        should be sent to all email addresses included in a request. It is expected that removal of access
-        will occur through native CSP mechanisms rather than via ATAT.
-
-        When an Operator included in this operation does not already have access to the Portfolio in the target
-        Cloud Environment and an invitation should be sent to that Operator's email address. ATAT clients should
-        not specify the `needs_reset` flag for Operators that do not already have access; however, ATAT
-        implementations must ignore the flag for such Operators who do not already have access.
-
-        When an Operator included in this operator already has access to the Portfolio in the target Cloud
-        Environment and the `needs_reset` attribute is set to `true`, their access should be reset (whether
-        via a token, password, or other vendor-specific means). When an Operator already has access to the
-        Portfolio in the target Cloud Environment and the `needs_reset` attribute is unspecified or `false`,
-        ATAT implementations must not make changes to the user's access nor perform any resets.
-      operationId: patchPortfolio
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
-      requestBody:
-        description: A PortfolioPatch object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PortfolioPatch'
-      responses:
-        '200':
-          description: Portfolio successfully updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PortfolioPatch'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Portfolio not found
-  '/portfolios/{portfolioId}/cost':
+  '/portfolios/{portfolioId}/costs':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     get:
       tags:
         - cost
@@ -226,48 +113,26 @@ paths:
         have been invoiced while forecast data will be provided for all future months.
       operationId: getCostsByPortfolio
       parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
         - name: start_date
           in: query
           description: >-
-            Start date of the cost data request. Must not precede the earliest pop_start_date of the given Portfolio's
-            Task Orders.
+            Start date of the cost data request in YYYY-MM format. Must not precede the earliest pop_start_date of the
+            given Portfolio's Task Orders.
           required: true
           schema:
             type: string
             format: date
-            example: "2021-12-31"
+            example: "2021-12"
         - name: end_date
           in: query
           description: >-
-            End date of the cost data request. Must not succeed the latest pop_end_date of the given Portfolio's
-            Task Orders.
+            End date of the cost data request in YYYY-MM format. Must not succeed the latest pop_end_date of the given
+            Portfolio's Task Orders.
           required: true
           schema:
             type: string
             format: date
-            example: "2026-12-31"
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
+            example: "2026-12"
       responses:
         '200':
           description: Cost operation successful
@@ -283,6 +148,9 @@ paths:
         '404':
           description: Portfolio not found
   '/portfolios/{portfolioId}/task-orders':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     post:
       tags:
         - provisioning
@@ -291,29 +159,6 @@ paths:
         - oidc: [atat/write-portfolio]
       description: Adds a new Task Order to an existing Portfolio
       operationId: addTaskOrder
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Successful operation
@@ -332,6 +177,10 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskOrder'
   '/portfolios/{portfolioId}/task-orders/{taskOrderId}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/TaskOrderId'
     put:
       tags:
         - provisioning
@@ -340,35 +189,6 @@ paths:
         - oidc: [atat/write-portfolio]
       description: Updates an existing Task Order (TO)
       operationId: updateTaskOrder
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: taskOrderId
-          in: path
-          description: ID of the Task Order
-          required: true
-          schema:
-            type: string
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Successful operation
@@ -386,7 +206,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TaskOrder'
-  '/portfolios/{portfolioId}/task-orders/{taskOrderId}/clins/{clin}/cost':
+  '/portfolios/{portfolioId}/task-orders/{taskOrderId}/clins/{clin}/costs':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/TaskOrderId'
     get:
       tags:
         - cost
@@ -396,18 +220,6 @@ paths:
       description: Queries CSP for actual or forecasted cost data by CLIN
       operationId: getCostsByClin
       parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: taskOrderId
-          in: path
-          description: ID of the Task Order
-          required: true
-          schema:
-            type: string
         - name: clin
           in: path
           description: contract line item number
@@ -416,36 +228,24 @@ paths:
             type: string
         - name: start_date
           in: query
-          description: Start date of the cost data request. Must not precede the earliest pop_start_date of the given CLIN.
+          description: >-
+            Start date of the cost data request in YYYY-MM format. Must not precede the earliest pop_start_date of the
+            given CLIN.
           required: true
           schema:
             type: string
             format: date
-            example: "2021-12-31"
+            example: "2021-12"
         - name: end_date
           in: query
-          description: End date of the cost data request. Must not succeed the latest pop_end_date of the given CLIN.
+          description: >-
+            End date of the cost data request in YYYY-MM format. Must not succeed the earliest pop_start_date of the
+            given CLIN.
           required: true
           schema:
             type: string
             format: date
-            example: "2026-12-31"
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
+            example: "2026-12"
       responses:
         '200':
           description: Cost operation successful
@@ -460,7 +260,110 @@ paths:
           description: Invalid ID or query parameters
         '404':
           description: Portfolio not found
+  '/portfolios/{portfolioId}/environments':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+    post:
+      tags:
+        - provisioning
+      summary: Adds a new Environment to an existing Portfolio
+      security:
+        - oidc: [atat/write-portfolio]
+      description: >-
+        Adds a new Environment to be provisioned. Once provisioned, Operators can log in to the CSP and begin using
+        provisioned resources and services, funded by the given CLIN.
+
+
+        **Note**
+
+          * Invitations should be sent to all Operator email addresses included in the request. See
+          [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of
+          these constructs.
+
+          * If this Portfolio does not contain a Clin whose classification_level matches that of the given
+          Environment, vendors should return a HTTP 400 response.
+      operationId: addEnvironment
+      parameters:
+        - name: X-Provision-Deadline
+          description: >-
+            The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
+            by the following values:
+              | Classification Level     | Deadline    |
+              | ------------------------ | ------------|
+              | Unclassified             | 2 Hours     |
+              | Secret                   | 72 Hours    |
+              | Top Secret               | 72 Hours    |
+          in: header
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '202':
+          description: Provisioning request has been accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvisioningStatus'
+          headers:
+            Location:
+              description: >-
+                Endpoint which ATAT should poll to receive status updates for this provisioning job.
+                This must be the getProvisioningStatus endpoint for this creation request.
+              schema:
+                type: string
+                example: "https://csp.com/atat/provisioning/123456789/status"
+              required: true
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio not found
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+  '/portfolios/{portfolioId}/environments/{environmentId}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/EnvironmentId'
+    patch:
+      tags:
+        - access
+      security:
+        - oidc: [atat/write-portfolio]
+      description: >-
+        Updates a limited set of attributes on an existing Environment
+      operationId: patchEnvironment
+      requestBody:
+        description: An EnvironmentPatch object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvironmentPatch'
+      responses:
+        '200':
+          description: Portfolio successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentPatch'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio or Environment not found
   '/provisioning/{provisioningJobId}/status':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
     get:
       tags:
         - provisioning
@@ -484,13 +387,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: X-Target-Impact-Level
-          description: >-
-            Target Impact Level for this request. Optional header which allows an ATAT implementation to route a request to a
-            more specific environment if more than one is available at a given endpoint.
-          in: header
-          schema:
-            $ref: '#/components/schemas/ImpactLevel'
       responses:
         '200':
           description: Get provisioning status successful
@@ -501,11 +397,43 @@ paths:
         '404':
           description: Provisioning Job ID not found
 components:
+  parameters:
+    ApiVersion:
+      name: X-Atat-Api-Version
+      description: >-
+        This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+        that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+        expected API version. If not provided by the client, the server should assume the client supports the latest
+        version of this specification.
+      in: header
+      schema:
+        type: string
+    PortfolioId:
+      name: portfolioId
+      description: ID of the Portfolio
+      in: path
+      required: true
+      schema:
+        type: string
+    EnvironmentId:
+      name: environmentId
+      description: ID of the Environment
+      in: path
+      required: true
+      schema:
+        type: string
+    TaskOrderId:
+      name: taskOrderId
+      in: path
+      description: ID of the Task Order
+      required: true
+      schema:
+        type: string
   schemas:
     ProvisioningStatus:
       type: object
       description: >-
-        Represents the status of a provisioning job submitted via POST /portfolios
+        Represents the status of a provisioning job
       required:
         - provisioning_job_id
         - status
@@ -519,31 +447,32 @@ components:
         portfolio_id:
           type: string
           description: The ID of the Portfolio for which status is being returned
+        environment_id:
+          type: string
+          description: The ID of the Environment for which status is being returned
         status:
           type: string
           enum:
-            - "NOT_STARTED"
-            - "IN_PROGRESS"
-            - "COMPLETE"
-            - "FAILED"
-    PortfolioPatch:
-      properties:
-        administrators:
-          type: array
-          items:
-            $ref: '#/components/schemas/Operator'
-    Portfolio:
-      allOf:
-        - $ref: '#/components/schemas/PortfolioPatch'
+            - NOT_STARTED
+            - IN_PROGRESS
+            - SUCCESS
+            - FAILURE
+    PortfolioCreate:
       description: >-
-        Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs.
+        Initial Portfolio created to contain Environments, which is an empty shell that does not initially include Environments.
       required:
         - id
         - name
         - task_orders
-        - administrators
-        - dashboard_link
       properties:
+        id:
+          description: >-
+            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to
+            construct links back to the provisioned environment, this should be the same ID generated internally for
+            the vendor's Portfolio-equivalent construct.
+          type: string
+          readOnly: true
+          example: "csp-portfolio-id-123"
         name:
           type: string
           example: "Sample Portfolio name"
@@ -552,12 +481,50 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/TaskOrder'
+    Portfolio:
+      allOf:
+        - $ref: '#/components/schemas/PortfolioCreate'
+      description: >-
+        Logical container for a set of cloud Environments and the Task Orders/CLINs which fund them
+      required:
+        - id
+        - name
+        - task_orders
+        - environments
+      properties:
+        environments:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/Environment'
+    EnvironmentPatch:
+      properties:
+        administrators:
+          type: array
+          items:
+            $ref: '#/components/schemas/Operator'
+    EnvironmentResponse:
+      description: >-
+        Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs. Note that this
+        version intentionally excludes the administrators property, because it is not considered permanent state that
+        the client will track.
+      required:
+        - id
+        - name
+        - dashboard_link
+        - classification_level
+      properties:
         id:
           description: >-
-            Represents the unqiue ID of the Portfolio created by the vendor. In order to enable the ATAT UI to construct links back to the provisioned environment, this should be the same ID generated internally for the vendor's Portfolio-equivalent construct.
+            Represents the unique ID of the Environment created by the vendor. In order to enable the ATAT UI to
+            construct links back to the provisioned environment, this should be the same ID generated internally for
+            the vendor's Portfolio-equivalent construct.
           type: string
           readOnly: true
-          example: "csp-portfolio-id-123"
+          example: "csp-environment-id-123"
+        name:
+          type: string
+          example: "Sample Environment name"
         dashboard_link:
           description: >-
             Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide
@@ -566,7 +533,23 @@ components:
           type: string
           readOnly: true
           format: uri
-          example: "https://vendor.com/account/csp-portfolio-id-123"
+          example: "https://vendor.com/account/csp-portfolio-id-123/environment/csp-environment-id-123"
+        classification_level:
+          $ref: '#/components/schemas/ClassificationLevel'
+        cloud_distinguisher:
+          $ref: '#/components/schemas/CloudDistinguisher'
+    Environment:
+      description: >-
+        Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs.
+      allOf:
+        - $ref: '#/components/schemas/EnvironmentPatch'
+        - $ref: '#/components/schemas/EnvironmentResponse'
+      required:
+        - id
+        - name
+        - administrators
+        - dashboard_link
+        - classification_level
     TaskOrder:
       type: object
       description: >-
@@ -582,32 +565,35 @@ components:
           description: Represents the unique ID of a Task Order. Must be defined by CSPs upon object creation.
           type: string
           readOnly: true
-          example: "csp-portfolio-id-123"
+          example: "csp-task-order-id-123"
         task_order_number:
           description: >-
             Represents the current Task Order Number. Subject to change over the lifetime of a Task Order. Should be
             considered metadata rather than a primary key (use the `id` instead).
           type: string
-          example: "1234567891234"
+          example: "HQ003421F0024"
         clins:
           type: array
           items:
             $ref: '#/components/schemas/Clin'
         pop_start_date:
-          description: Start of period of performance (for this Task Order)
+          description: Start of period of performance for this Task Order in YYYY-MM format.
           type: string
           format: date
-          example: "2021-07-01"
+          example: "2021-07"
         pop_end_date:
-          description: End of period of performance (for this Task Order)
+          description: End of period of performance for this Task Order in YYYY-MM format.
           type: string
           format: date
-          example: "2026-07-01"
+          example: "2026-07"
     Clin:
-      description: Represents a CLIN in a Task Order
+      description: >-
+        Represents a CLIN in a Task Order. Note that classification_level is required if type == "CLOUD", otherwise
+        it must be null or undefined.
       additionalProperties: false
       required:
         - clin_number
+        - type
         - pop_start_date
         - pop_end_date
       properties:
@@ -615,16 +601,25 @@ components:
           description: Contract Line Item Number (CLIN), 0001 through 9999
           type: string
           pattern: '(?!^0{4}$)^\d{4}$'
+        type:
+          description: >-
+            Distinguishes a "CLOUD" CLIN, which directly funds cloud workloads, from "NON_CLOUD" CLINs, which do not.
+          type: string
+          enum:
+            - CLOUD
+            - NON_CLOUD
+        classification_level:
+          $ref: '#/components/schemas/ClassificationLevel'
         pop_start_date:
-          description: Start of period of performance (for this CLIN)
+          description: Start of period of performance for this CLIN in YYYY-MM format.
           type: string
           format: date
-          example: "2021-07-01"
+          example: "2021-07"
         pop_end_date:
-          description: End of period of performance (for this CLIN)
+          description: End of period of performance for this CLIN in YYYY-MM format.
           type: string
           format: date
-          example: "2022-07-01"
+          example: "2026-07"
     Operator:
       description: >-
         Represents an individual who should have access to a Portfolio in a target Cloud Environment.
@@ -646,39 +641,73 @@ components:
             Flag which denotes whether the given Operator's access should be updated (password/token reset or other vendor-specific process)
           type: boolean
           default: false
-    ImpactLevel:
-      description: List of available Impact Levels for target Cloud Environments
+    ClassificationLevel:
+      description: >-
+        Represents the classification level for this environment. Attempts to change this field via PUT or PATCH
+        should result in a HTTP 400.
       type: string
       enum:
-        - IL2
-        - IL4
-        - IL5
-        - IL6
-        - TS
+        - UNCLASSIFIED
+        - SECRET
+        - TOP_SECRET
     CostResponseByClin:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
         cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
         instead.
+
+
+        **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
+        expected to provide forecast data for expenses such as travel or training.
       required:
         - actual
-        - forecast
       properties:
         actual:
           $ref: '#/components/schemas/CostData'
         forecast:
           $ref: '#/components/schemas/CostData'
+    CloudDistinguisher:
+      description: >-
+        Optional parameter used when the vendor offers more than one distinct Cloud System at a given classification
+        level. Valid values must be provided to ATAT client by vendors. Note that it is expected that implementations
+        will ignore the display_name and description fields. They are nonetheless included to ensure that their intent
+        is not misrepresented by the ATAT UI.
+      required:
+        - name
+        - display_name
+        - description
+      properties:
+        name:
+          type: string
+          description: Unique identifier for a particular Cloud System, according to vendor
+          example: il4_dod
+        display_name:
+          type: string
+          description: Human readable display name for a Cloud System identifier
+          example: Department of Defense - IL4
+        description:
+          type: string
+          description: Description of intended use of a Cloud System
+          example: Cloud System meant for use by DoD organizations with IL4 workloads
     CostResponseByPortfolio:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
         cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
         instead. Broken down by each CLIN within each Task Order within the given Portfolio.
+
+
+        **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
+        expected to provide forecast data for expenses such as travel or training.
       required:
         - task_orders
       properties:
         task_orders:
           type: array
           items:
+            required:
+              - task_order_id
+              - task_order_number
+              - clins
             properties:
               task_order_id:
                 type: string
@@ -686,6 +715,9 @@ components:
                 type: string
               clins:
                 type: array
+                required:
+                  - clin_number
+                  - actual
                 items:
                   properties:
                     clin_number:
@@ -749,13 +781,6 @@ components:
                       value: "50.00"
                     - month: "2022-01"
                       value: "700.00"
-                forecast:
-                  total: "1000.00"
-                  results:
-                    - month: "2022-02"
-                      value: "100.00"
-                    - month: "2022-03"
-                      value: "900.00"
   securitySchemes:
     oidc:
       description: >-
