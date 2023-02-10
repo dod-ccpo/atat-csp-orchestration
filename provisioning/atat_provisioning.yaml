@@ -603,7 +603,7 @@ components:
           pattern: '(?!^0{4}$)^\d{4}$'
         type:
           description: >-
-            Distinguishes a "CLOUD" CLIN, which directly funds cloud workloads, from "NON-CLOUD" CLINs, which do not.
+            Distinguishes a "CLOUD" CLIN, which directly funds cloud workloads, from "NON_CLOUD" CLINs, which do not.
           type: string
           enum:
             - CLOUD
