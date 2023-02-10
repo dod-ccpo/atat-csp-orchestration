@@ -455,8 +455,8 @@ components:
           enum:
             - NOT_STARTED
             - IN_PROGRESS
-            - COMPLETE
-            - FAILED
+            - SUCCESS
+            - FAILURE
     PortfolioCreate:
       description: >-
         Initial Portfolio created to contain Environments, which is an empty shell that does not initially include Environments.
@@ -589,7 +589,7 @@ components:
     Clin:
       description: >-
         Represents a CLIN in a Task Order. Note that classification_level is required if type == "CLOUD", otherwise
-        it must be null or undefined .
+        it must be null or undefined.
       additionalProperties: false
       required:
         - clin_number
@@ -657,7 +657,7 @@ components:
         instead.
 
 
-        **Note**: Forecast data is only required for Clin's whose `type` is "cloud". For instance, vendors are not
+        **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
         - actual
