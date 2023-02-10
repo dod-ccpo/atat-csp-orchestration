@@ -12,7 +12,7 @@ info:
     ## Environments
 
     Environments represent a logical container for a set of cloud resources which are funded by a particular CLIN within
-    a Task Order. The term is meant to be agnostic across CSPs. A Environment can be thought of as an account at the
+    a Task Order. The term is meant to be agnostic across CSPs. An Environment can be thought of as an account at the
     root of a hierarchy. ATAT does not dictate structure within a Portfolio. Once an Environment has been provisioned a
     Mission Owner is free to organize and secure resources to satisfy mission requirements.
 
@@ -344,7 +344,7 @@ paths:
         Updates a limited set of attributes on an existing Environment
       operationId: patchEnvironment
       requestBody:
-        description: A EnvironmentPatch object
+        description: An EnvironmentPatch object
         required: true
         content:
           application/json:
@@ -459,7 +459,7 @@ components:
             - FAILED
     PortfolioCreate:
       description: >-
-        Version of Portfolio used for initial Portfolio creation. Does not include Environments.
+        Initial Portfolio created to contain Environments, which is an empty shell that does not initially include Environments.
       required:
         - id
         - name
@@ -485,7 +485,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/PortfolioCreate'
       description: >-
-        Logical container for a set of cloud Environments and the Task Orders/CLINs whih fund them
+        Logical container for a set of cloud Environments and the Task Orders/CLINs which fund them
       required:
         - id
         - name
@@ -588,7 +588,7 @@ components:
           example: "2026-07"
     Clin:
       description: >-
-        Represents a CLIN in a Task Order. Note that classification_level is required if type == "cloud", otherwise
+        Represents a CLIN in a Task Order. Note that classification_level is required if type == "CLOUD", otherwise
         it must be null or undefined .
       additionalProperties: false
       required:
@@ -603,7 +603,7 @@ components:
           pattern: '(?!^0{4}$)^\d{4}$'
         type:
           description: >-
-            Distinguishes a "cloud" CLIN, which directly funds cloud workloads, from "non-cloud" CLINs, which do not.
+            Distinguishes a "CLOUD" CLIN, which directly funds cloud workloads, from "NON-CLOUD" CLINs, which do not.
           type: string
           enum:
             - CLOUD
