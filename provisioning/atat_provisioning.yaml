@@ -29,19 +29,21 @@ info:
   version: 1.1.0
   title: ATAT CSP API
   contact:
-    email: atat-dev+provisioning_api@ccpo.mil
+    email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
 tags:
   - name: access
     description: >-
-      Operations to manage access to provisioned Portfolios
+      Operations to manage access to provisioned Environments
   - name: cost
     description: >-
       Operations to query for actual and forecasted costs
   - name: provisioning
     description: >-
-      Operations to manage provisioned Portfolios
+      Operations to manage provisioned Environments
 paths:
   '/portfolios':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
     post:
       tags:
         - provisioning
@@ -55,16 +57,6 @@ paths:
         [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of
         these constructs.
       operationId: addPortfolio
-      parameters:
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       requestBody:
         description: A new Portfolio
         required: true
@@ -82,6 +74,9 @@ paths:
         '400':
           description: Invalid input
   '/portfolios/{portfolioId}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     get:
       tags:
         - provisioning
@@ -90,22 +85,6 @@ paths:
         - oidc: [atat/read-portfolio]
       description: Returns a single existing Portfolio, including Task Orders and Operators
       operationId: getPortfolioById
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Portfolio successfully retrieved
@@ -118,6 +97,9 @@ paths:
         '404':
           description: Portfolio not found
   '/portfolios/{portfolioId}/costs':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     get:
       tags:
         - cost
@@ -131,12 +113,6 @@ paths:
         have been invoiced while forecast data will be provided for all future months.
       operationId: getCostsByPortfolio
       parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
         - name: start_date
           in: query
           description: >-
@@ -157,15 +133,6 @@ paths:
             type: string
             format: date
             example: "2026-12"
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Cost operation successful
@@ -181,6 +148,9 @@ paths:
         '404':
           description: Portfolio not found
   '/portfolios/{portfolioId}/task-orders':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     post:
       tags:
         - provisioning
@@ -189,22 +159,6 @@ paths:
         - oidc: [atat/write-portfolio]
       description: Adds a new Task Order to an existing Portfolio
       operationId: addTaskOrder
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Successful operation
@@ -223,6 +177,10 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskOrder'
   '/portfolios/{portfolioId}/task-orders/{taskOrderId}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/TaskOrderId'
     put:
       tags:
         - provisioning
@@ -231,28 +189,6 @@ paths:
         - oidc: [atat/write-portfolio]
       description: Updates an existing Task Order (TO)
       operationId: updateTaskOrder
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: taskOrderId
-          in: path
-          description: ID of the Task Order
-          required: true
-          schema:
-            type: string
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Successful operation
@@ -271,6 +207,10 @@ paths:
             schema:
               $ref: '#/components/schemas/TaskOrder'
   '/portfolios/{portfolioId}/task-orders/{taskOrderId}/clins/{clin}/costs':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/TaskOrderId'
     get:
       tags:
         - cost
@@ -280,18 +220,6 @@ paths:
       description: Queries CSP for actual or forecasted cost data by CLIN
       operationId: getCostsByClin
       parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: taskOrderId
-          in: path
-          description: ID of the Task Order
-          required: true
-          schema:
-            type: string
         - name: clin
           in: path
           description: contract line item number
@@ -318,15 +246,6 @@ paths:
             type: string
             format: date
             example: "2026-12"
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       responses:
         '200':
           description: Cost operation successful
@@ -342,6 +261,9 @@ paths:
         '404':
           description: Portfolio not found
   '/portfolios/{portfolioId}/environments':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
     post:
       tags:
         - provisioning
@@ -363,21 +285,6 @@ paths:
           Environment, vendors should return a HTTP 400 response.
       operationId: addEnvironment
       parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
         - name: X-Provision-Deadline
           description: >-
             The deadline by which the ATAT client expects the portfolio provisioning process to be complete is dictated
@@ -404,6 +311,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProvisioningStatus'
+          headers:
+            Location:
+              description: >-
+                Endpoint which ATAT should poll to receive status updates for this provisioning job.
+                This must be the getProvisioningStatus endpoint for this creation request.
+              schema:
+                type: string
+                example: "https://csp.com/atat/provisioning/123456789/status"
+              required: true
         '400':
           description: Invalid ID supplied
         '404':
@@ -415,36 +331,18 @@ paths:
             schema:
               $ref: '#/components/schemas/Environment'
   '/portfolios/{portfolioId}/environments/{environmentId}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+      - $ref: '#/components/parameters/PortfolioId'
+      - $ref: '#/components/parameters/EnvironmentId'
     patch:
       tags:
         - access
       security:
         - oidc: [atat/write-portfolio]
       description: >-
-        Updates an existing
+        Updates a limited set of attributes on an existing Environment
       operationId: patchEnvironment
-      parameters:
-        - name: portfolioId
-          in: path
-          description: ID of the Portfolio
-          required: true
-          schema:
-            type: string
-        - name: environmentId
-          in: path
-          description: ID of the Environment
-          required: true
-          schema:
-            type: string
-        - name: X-Atat-Api-Version
-          description: >-
-            This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
-            that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
-            expected API version. If not provided by the client, the server should assume the client supports the latest
-            version of this specification.
-          in: header
-          schema:
-            type: string
       requestBody:
         description: A EnvironmentPatch object
         required: true
@@ -464,6 +362,8 @@ paths:
         '404':
           description: Portfolio or Environment not found
   '/provisioning/{provisioningJobId}/status':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
     get:
       tags:
         - provisioning
@@ -497,6 +397,38 @@ paths:
         '404':
           description: Provisioning Job ID not found
 components:
+  parameters:
+    ApiVersion:
+      name: X-Atat-Api-Version
+      description: >-
+        This header may be provided by an ATAT client implementation to provide context for the ATAT API specification
+        that it expects to be compatible with. Implementations may choose to adapt their response to conform to the
+        expected API version. If not provided by the client, the server should assume the client supports the latest
+        version of this specification.
+      in: header
+      schema:
+        type: string
+    PortfolioId:
+      name: portfolioId
+      description: ID of the Portfolio
+      in: path
+      required: true
+      schema:
+        type: string
+    EnvironmentId:
+      name: environmentId
+      description: ID of the Environment
+      in: path
+      required: true
+      schema:
+        type: string
+    TaskOrderId:
+      name: taskOrderId
+      in: path
+      description: ID of the Task Order
+      required: true
+      schema:
+        type: string
   schemas:
     ProvisioningStatus:
       type: object
