@@ -696,7 +696,7 @@ components:
         instead. Broken down by each CLIN within each Task Order within the given Portfolio.
 
 
-        **Note**: Forecast data is only required for Clin's whose `type` is "cloud". For instance, vendors are not
+        **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
         - task_orders
