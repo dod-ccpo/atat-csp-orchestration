@@ -668,8 +668,10 @@ components:
           $ref: '#/components/schemas/CostData'
     CloudDistinguisher:
       description: >-
-        Optional parameter used when the vendor offers more than one distinct cloud system at a given classification
-        level. Valid values must be provided to ATAT client by vendors.
+        Optional parameter used when the vendor offers more than one distinct Cloud System at a given classification
+        level. Valid values must be provided to ATAT client by vendors. Note that it is expected that implementations
+        will ignore the display_name and description fields. They are nonetheless included to ensure that their intent
+        is not misrepresented by the ATAT UI.
       required:
         - name
         - display_name
@@ -686,7 +688,7 @@ components:
         description:
           type: string
           description: Description of intended use of a Cloud System
-          example: Cloud system meant for use by DoD organizations with IL4 workloads
+          example: Cloud System meant for use by DoD organizations with IL4 workloads
     CostResponseByPortfolio:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
