@@ -481,6 +481,12 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/TaskOrder'
+        migrationOfPortfolioRequired:
+          description: >-
+            A boolean value representing whether or not the Portfolio being created by the vendor requires the 
+            migration of existing cloud resources.
+          type: boolean
+          
     Portfolio:
       allOf:
         - $ref: '#/components/schemas/PortfolioCreate'
