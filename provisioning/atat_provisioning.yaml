@@ -26,7 +26,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.1.0
+  version: 1.2.0
   title: ATAT CSP API
   contact:
     email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
@@ -335,6 +335,25 @@ paths:
       - $ref: '#/components/parameters/ApiVersion'
       - $ref: '#/components/parameters/PortfolioId'
       - $ref: '#/components/parameters/EnvironmentId'
+    get:
+      tags:
+        - access
+      security:
+        - oidc: [atat/read-portfolio]
+      description: >-
+        Returns a single existing Environment
+      operationId: getEnvironmentById
+      responses:
+        '200':
+          description: Environment successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio or Environment not found
     patch:
       tags:
         - access
@@ -481,12 +500,6 @@ components:
           items:
             allOf:
               - $ref: '#/components/schemas/TaskOrder'
-        migrationOfPortfolioRequired:
-          description: >-
-            A boolean value representing whether or not the Portfolio being created by the vendor requires the 
-            migration of existing cloud resources.
-          type: boolean
-          
     Portfolio:
       allOf:
         - $ref: '#/components/schemas/PortfolioCreate'
@@ -531,11 +544,26 @@ components:
         name:
           type: string
           example: "Sample Environment name"
+        domain_name:
+          description: >-
+            Text which is meant to represent a domain name or domain part that uniquely identifies this Environment
+            in the vendor cloud.
+          type: string
+          example: "sampleenvironment-a_1"
+          pattern: '^[A-Za-z0-9](?:[A-Za-z0-9\-_]{0,61}[A-Za-z0-9])?$'
+        email_distribution_list:
+          description: >-
+            Represents an email meant to be used as a distribution list for communication from the vendor to the owners
+            of this Environment. Should not be an individual's email address.
+          type: string
+          format: email
+          example: "my-agency-mbx-program-abc-il2@agency.mil"
         dashboard_link:
           description: >-
-            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide
-            direct links to a Mission Owner's Portfolio within the vendor's environment. Will NOT be supplied by the
-            ATAT Client on initial POST /portfolios, but is expected to be provided upon successful Portfolio creation.
+            Represents a deep link to the Environment as represented in the vendor's dashboard. Allows ATAT to provide
+            direct links to a Mission Owner's Environment within the vendor's target cloud. Will NOT be supplied by the
+            ATAT Client on initial call to create the Environment, but is expected to be provided upon successful
+            Environment creation.
           type: string
           readOnly: true
           format: uri
@@ -544,6 +572,12 @@ components:
           $ref: '#/components/schemas/ClassificationLevel'
         cloud_distinguisher:
           $ref: '#/components/schemas/CloudDistinguisher'
+        is_migration:
+          description: >-
+            A boolean value representing whether or not the Environment being created requires the migration of 
+            existing cloud resources.
+          type: boolean
+          default: false
     Environment:
       description: >-
         Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs.
@@ -586,12 +620,12 @@ components:
           description: Start of period of performance for this Task Order in YYYY-MM format.
           type: string
           format: date
-          example: "2021-07"
+          example: "2021-07-15"
         pop_end_date:
           description: End of period of performance for this Task Order in YYYY-MM format.
           type: string
           format: date
-          example: "2026-07"
+          example: "2026-07-14"
     Clin:
       description: >-
         Represents a CLIN in a Task Order. Note that classification_level is required if type == "CLOUD", otherwise
