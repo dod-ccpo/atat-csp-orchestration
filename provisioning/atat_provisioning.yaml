@@ -550,7 +550,7 @@ components:
             which can be used in part of a host name or URL.
           type: string
           example: "sampleenvironment-a_1"
-          pattern: '^[A-Za-z0-9](?:[A-Za-z0-9\-_]{0,61}[A-Za-z0-9])?$'
+          pattern: '^[A-Za-z0-9](?:[A-Za-z0-9\-_]{0,61}[A-Za-z0-9])$'
         email_distribution_list:
           description: >-
             Represents an email meant to be used as a distribution list for communication from the vendor to the owners
