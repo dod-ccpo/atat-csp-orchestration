@@ -617,12 +617,12 @@ components:
           items:
             $ref: '#/components/schemas/Clin'
         pop_start_date:
-          description: Start of period of performance for this Task Order in YYYY-MM format.
+          description: Start of period of performance for this Task Order in YYYY-MM-DD format.
           type: string
           format: date
           example: "2021-07-15"
         pop_end_date:
-          description: End of period of performance for this Task Order in YYYY-MM format.
+          description: End of period of performance for this Task Order in YYYY-MM-DD format.
           type: string
           format: date
           example: "2026-07-14"
@@ -651,15 +651,15 @@ components:
         classification_level:
           $ref: '#/components/schemas/ClassificationLevel'
         pop_start_date:
-          description: Start of period of performance for this CLIN in YYYY-MM format.
+          description: Start of period of performance for this CLIN in YYYY-MM-DD format.
           type: string
           format: date
-          example: "2021-07"
+          example: "2021-07-22"
         pop_end_date:
-          description: End of period of performance for this CLIN in YYYY-MM format.
+          description: End of period of performance for this CLIN in YYYY-MM-DD format.
           type: string
           format: date
-          example: "2026-07"
+          example: "2026-07-21"
     Operator:
       description: >-
         Represents an individual who should have access to a Portfolio in a target Cloud Environment.
