@@ -544,10 +544,10 @@ components:
         name:
           type: string
           example: "Sample Environment name"
-        domain_name:
+        account_name:
           description: >-
-            Text which is meant to represent a domain name or domain part that uniquely identifies this Environment
-            in the vendor cloud.
+            Text which is meant to represent a name that uniquely identifies this Environment in the vendor cloud 
+            which can be used in part of a host name or URL.
           type: string
           example: "sampleenvironment-a_1"
           pattern: '^[A-Za-z0-9](?:[A-Za-z0-9\-_]{0,61}[A-Za-z0-9])?$'
