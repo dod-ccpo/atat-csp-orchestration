@@ -294,6 +294,7 @@ paths:
               | Unclassified             | 2 Hours     |
               | Secret                   | 72 Hours    |
               | Top Secret               | 72 Hours    |
+            Note: this header must NOT be sent if `is_migration` is `true` for the given Environment.
           in: header
           schema:
             type: string
@@ -692,11 +693,16 @@ components:
         - TOP_SECRET
     CostResponseByClin:
       description: >-
-        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
-        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
-        instead.
-
-
+        Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
+        data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
+        should be supplied for any month which has not been invoiced. Specifically, this implies the following 
+        expectations:
+        
+          * Invoiced Past Months - actuals only 
+          * Un-invoiced Past Months - actuals and forecasts
+          * Current Month - actuals and forecasts
+          * Future Months - forecasts only
+        
         **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
@@ -731,10 +737,15 @@ components:
           example: Cloud System meant for use by DoD organizations with IL4 workloads
     CostResponseByPortfolio:
       description: >-
-        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
-        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
-        instead. Broken down by each CLIN within each Task Order within the given Portfolio.
-
+        Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
+        data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
+        should be supplied for any month which has not been invoiced. Specifically, this implies the following 
+        expectations:
+        
+          * Invoiced Past Months - actuals only 
+          * Un-invoiced Past Months - actuals and forecasts
+          * Current Month - actuals and forecasts
+          * Future Months - forecasts only
 
         **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
