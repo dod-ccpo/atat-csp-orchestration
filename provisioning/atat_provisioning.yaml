@@ -26,7 +26,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.1.0
+  version: 1.2.0
   title: ATAT CSP API
   contact:
     email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
@@ -294,6 +294,7 @@ paths:
               | Unclassified             | 2 Hours     |
               | Secret                   | 72 Hours    |
               | Top Secret               | 72 Hours    |
+            Note: this header must NOT be sent if `is_migration` is `true` for the given Environment.
           in: header
           schema:
             type: string
@@ -335,6 +336,25 @@ paths:
       - $ref: '#/components/parameters/ApiVersion'
       - $ref: '#/components/parameters/PortfolioId'
       - $ref: '#/components/parameters/EnvironmentId'
+    get:
+      tags:
+        - access
+      security:
+        - oidc: [atat/read-portfolio]
+      description: >-
+        Returns a single existing Environment
+      operationId: getEnvironmentById
+      responses:
+        '200':
+          description: Environment successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvironmentResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Portfolio or Environment not found
     patch:
       tags:
         - access
@@ -525,11 +545,26 @@ components:
         name:
           type: string
           example: "Sample Environment name"
+        account_name:
+          description: >-
+            Text which is meant to represent a name that uniquely identifies this Environment in the vendor cloud 
+            which can be used in part of a host name or URL.
+          type: string
+          example: "sampleenvironment-a_1"
+          pattern: '^[a-zA-Z][a-zA-Z0-9]{5,25}$'
+        email_distribution_list:
+          description: >-
+            Represents an email meant to be used as a distribution list for communication from the vendor to the owners
+            of this Environment. Should not be an individual's email address.
+          type: string
+          format: email
+          example: "my-agency-mbx-program-abc-il2@agency.mil"
         dashboard_link:
           description: >-
-            Represents a deep link to the Portfolio as represented in the vendor's dashboard. Allows ATAT to provide
-            direct links to a Mission Owner's Portfolio within the vendor's environment. Will NOT be supplied by the
-            ATAT Client on initial POST /portfolios, but is expected to be provided upon successful Portfolio creation.
+            Represents a deep link to the Environment as represented in the vendor's dashboard. Allows ATAT to provide
+            direct links to a Mission Owner's Environment within the vendor's target cloud. Will NOT be supplied by the
+            ATAT Client on initial call to create the Environment, but is expected to be provided upon successful
+            Environment creation.
           type: string
           readOnly: true
           format: uri
@@ -538,6 +573,12 @@ components:
           $ref: '#/components/schemas/ClassificationLevel'
         cloud_distinguisher:
           $ref: '#/components/schemas/CloudDistinguisher'
+        is_migration:
+          description: >-
+            A boolean value representing whether or not the Environment being created requires the migration of 
+            existing cloud resources.
+          type: boolean
+          default: false
     Environment:
       description: >-
         Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs.
@@ -577,15 +618,15 @@ components:
           items:
             $ref: '#/components/schemas/Clin'
         pop_start_date:
-          description: Start of period of performance for this Task Order in YYYY-MM format.
+          description: Start of period of performance for this Task Order in YYYY-MM-DD format.
           type: string
           format: date
-          example: "2021-07"
+          example: "2021-07-15"
         pop_end_date:
-          description: End of period of performance for this Task Order in YYYY-MM format.
+          description: End of period of performance for this Task Order in YYYY-MM-DD format.
           type: string
           format: date
-          example: "2026-07"
+          example: "2026-07-14"
     Clin:
       description: >-
         Represents a CLIN in a Task Order. Note that classification_level is required if type == "CLOUD", otherwise
@@ -611,15 +652,15 @@ components:
         classification_level:
           $ref: '#/components/schemas/ClassificationLevel'
         pop_start_date:
-          description: Start of period of performance for this CLIN in YYYY-MM format.
+          description: Start of period of performance for this CLIN in YYYY-MM-DD format.
           type: string
           format: date
-          example: "2021-07"
+          example: "2021-07-22"
         pop_end_date:
-          description: End of period of performance for this CLIN in YYYY-MM format.
+          description: End of period of performance for this CLIN in YYYY-MM-DD format.
           type: string
           format: date
-          example: "2026-07"
+          example: "2026-07-21"
     Operator:
       description: >-
         Represents an individual who should have access to a Portfolio in a target Cloud Environment.
@@ -652,11 +693,16 @@ components:
         - TOP_SECRET
     CostResponseByClin:
       description: >-
-        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
-        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
-        instead.
-
-
+        Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
+        data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
+        should be supplied for any month which has not been invoiced. Specifically, this implies the following 
+        expectations:
+        
+          * Invoiced Past Months - actuals only 
+          * Un-invoiced Past Months - actuals and forecasts
+          * Current Month - actuals and forecasts
+          * Future Months - forecasts only
+        
         **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
@@ -691,10 +737,15 @@ components:
           example: Cloud System meant for use by DoD organizations with IL4 workloads
     CostResponseByPortfolio:
       description: >-
-        Provides cost data in a format in accordance with the provided CostRequest. For any time periods for which
-        cost data has been generated, actual amounts should be provided. Otherwise, forecast data should be used
-        instead. Broken down by each CLIN within each Task Order within the given Portfolio.
-
+        Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
+        data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
+        should be supplied for any month which has not been invoiced. Specifically, this implies the following 
+        expectations:
+        
+          * Invoiced Past Months - actuals only 
+          * Un-invoiced Past Months - actuals and forecasts
+          * Current Month - actuals and forecasts
+          * Future Months - forecasts only
 
         **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
