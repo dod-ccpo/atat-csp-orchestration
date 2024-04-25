@@ -26,7 +26,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.2.0
+  version: 1.3.0
   title: ATAT CSP API
   contact:
     email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
@@ -416,6 +416,52 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
         '404':
           description: Provisioning Job ID not found
+  '/far51':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+    get:
+      tags:
+        - cost
+      summary: Gets all FAR Part 51 Authorizations
+      security:
+        - oidc: [atat/read-portfolio]
+      description: >-
+        Returns an array of FAR Part 51 Authorizations known to the vendor, so that the ATAT client can track them. This
+        must be fulfilled in this way because FAR Part 51 Authorizations are not processed through the ATAT UI in the
+        same fashion as Portfolios, Task Orders and Environments. Must return up to 100 FAR Part 51 Authorizations which
+        were created after the provided `start_date` and before the provided `end_date` query parameters, sorted by
+        `created_at`.
+      operationId: getFarPart51Authorizations
+      parameters:
+        - name: start_date
+          in: query
+          description: >-
+            Start date of the request in YYYY-MM format.
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2021-12"
+        - name: end_date
+          in: query
+          description: >-
+            End date of the request in YYYY-MM format.
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12"
+      responses:
+        '200':
+          description: FAR Part 51 Authorizations successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Far51Authorization'
+        '400':
+          description: Missing required parameter
 components:
   parameters:
     ApiVersion:
@@ -515,8 +561,7 @@ components:
         environments:
           type: array
           items:
-            allOf:
-              - $ref: '#/components/schemas/Environment'
+            $ref: '#/components/schemas/EnvironmentResponse'
     EnvironmentPatch:
       properties:
         administrators:
@@ -547,7 +592,7 @@ components:
           example: "Sample Environment name"
         account_name:
           description: >-
-            Text which is meant to represent a name that uniquely identifies this Environment in the vendor cloud 
+            Text which is meant to represent a name that uniquely identifies this Environment in the vendor cloud
             which can be used in part of a host name or URL.
           type: string
           example: "sampleenvironment-a_1"
@@ -575,7 +620,7 @@ components:
           $ref: '#/components/schemas/CloudDistinguisher'
         is_migration:
           description: >-
-            A boolean value representing whether or not the Environment being created requires the migration of 
+            A boolean value representing whether or not the Environment being created requires the migration of
             existing cloud resources.
           type: boolean
           default: false
@@ -691,18 +736,69 @@ components:
         - UNCLASSIFIED
         - SECRET
         - TOP_SECRET
+    Far51Authorization:
+      description: >-
+        An authorization to spend contract funds under FAR Part 51 (see https://www.acquisition.gov/far/part-51).
+      properties:
+        id:
+          type: string
+          description: Unique identifier for this FAR Part 51 Authorization. Used for retrieval of cost data.
+          example: "csp-far-51-id-123"
+        created_at:
+          description: >-
+            Date this FAR Part 51 Authorization was created by the vendor's ATAT implementation in YYYY-MM-DD format.
+          type: string
+          format: date
+          example: "2021-03-28"
+        contract_number:
+          description: Contract Number under which this FAR Part 51 Authorization was granted
+          type: string
+          example: "N0006217D0001"
+        delivery_order_number:
+          description: Delivery Order Number under which this FAR Part 51 Authorization was granted
+          type: string
+          example: "N0006217F0001"
+        pop_start_date:
+          description: Start of period of performance for this FAR Part 51 Authorization in YYYY-MM-DD format.
+          type: string
+          format: date
+          example: "2021-07-15"
+        pop_end_date:
+          description: End of period of performance for this FAR Part 51 Authorization in YYYY-MM-DD format.
+          type: string
+          format: date
+          example: "2026-07-14"
+        customer_department:
+          description: >-
+            Abbreviation for Agency or Department associated with this FAR Part 51 Authorization, e.g. AF, Army, DLA, DOJ
+          type: string
+          example: "DOJ"
+        authorizing_contract_officer:
+          description: Contact information for authorizing Contract Officer
+          type: object
+          properties:
+            name:
+              type: string
+              example: "Jane Contractor"
+            telephone:
+              type: string
+              example: "555-123-4567"
+            email:
+              type: string
+              format: email
+              example: "jane@agency.gov"
     CostResponseByClin:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
         data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
-        should be supplied for any month which has not been invoiced. Specifically, this implies the following 
+        should be supplied for any month which has not been invoiced. Specifically, this implies the following
         expectations:
-        
-          * Invoiced Past Months - actuals only 
+
+          * Invoiced Past Months - actuals only
           * Un-invoiced Past Months - actuals and forecasts
           * Current Month - actuals and forecasts
           * Future Months - forecasts only
-        
+
         **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
@@ -739,10 +835,10 @@ components:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
         data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
-        should be supplied for any month which has not been invoiced. Specifically, this implies the following 
+        should be supplied for any month which has not been invoiced. Specifically, this implies the following
         expectations:
-        
-          * Invoiced Past Months - actuals only 
+
+          * Invoiced Past Months - actuals only
           * Un-invoiced Past Months - actuals and forecasts
           * Current Month - actuals and forecasts
           * Future Months - forecasts only
