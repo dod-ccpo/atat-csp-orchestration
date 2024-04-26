@@ -26,7 +26,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.3.0
+  version: 1.2.0
   title: ATAT CSP API
   contact:
     email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
@@ -416,6 +416,32 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
         '404':
           description: Provisioning Job ID not found
+  '/task-orders/{taskOrderNumber}':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+    head:
+      tags:
+        - provisioning
+      summary: Determines if a given Task Order is ready to be used for provisioning
+      security:
+        - oidc: [atat/read-portfolio]
+      description: >-
+        Vendors should return a 200 if the provided Task Order Number is ready to be used for provisioning and 400
+        otherwise.
+      operationId: checkTaskOrder
+      parameters:
+        - name: taskOrderNumber
+          description: Task Order Number
+          example: "N0006217F0001"
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The given Task Order is ready to be used for Portfolio provisioning
+        '400':
+          description: The given Task Order is not ready to be used for Portfolio provisioning
   '/far51':
     parameters:
       - $ref: '#/components/parameters/ApiVersion'
@@ -458,10 +484,64 @@ paths:
             application/json:
               schema:
                 type: array
+                maxItems: 100
+                uniqueItems: true
                 items:
                   $ref: '#/components/schemas/Far51Authorization'
         '400':
           description: Missing required parameter
+  '/far51/{far51AuthorizationId}/costs':
+    parameters:
+      - $ref: '#/components/parameters/ApiVersion'
+    get:
+      tags:
+        - cost
+      summary: Returns cost data for a FAR 51 Authorization
+      security:
+        - oidc: [atat/read-cost]
+      description: >-
+        Queries CSP for actual cost data for a given FAR Part 51 Authorization and time period. Queries should return
+        data for all months included in date ranges. For example, a start_date of "2022-01-25" and end_date of
+        "2022-03-02" should return data for January, February and March.
+      operationId: getCostsByFar51Authorization
+      parameters:
+        - name: start_date
+          in: query
+          description: >-
+            Start date of the cost data request in YYYY-MM format.
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2021-12"
+        - name: end_date
+          in: query
+          description: >-
+            End date of the cost data request in YYYY-MM format.
+          required: true
+          schema:
+            type: string
+            format: date
+            example: "2026-12"
+        - name: far51AuthorizationId
+          description: ID of the FAR Part 51 Authorization
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cost operation successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CostData'
+        '400':
+          description: Invalid ID or query parameters
+        '404':
+          description: Far Part 51 Authorization not found
 components:
   parameters:
     ApiVersion:
