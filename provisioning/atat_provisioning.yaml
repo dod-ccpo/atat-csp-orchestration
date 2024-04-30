@@ -18,7 +18,7 @@ info:
 
     ## Task Orders
 
-    Portfolios contain one or more *Task Orders* (TO), which in turn contain or more or *Contract Line Item Number*
+    Portfolios contain one or more *Task Orders* (TO), which in turn contain or more or *Contract Line Item Numbers*
     (CLINs). Each have separate Periods of Performance (PoP) dates; CLIN PoP dates will be within the time frames of
     the Task Order in which they belong.
 
@@ -126,7 +126,7 @@ paths:
         - name: end_date
           in: query
           description: >-
-            End date of the cost data request in YYYY-MM format. Must not succeed the latest pop_end_date of the given
+            End date of the cost data request in YYYY-MM format. Must not exceed the latest pop_end_date of the given
             Portfolio's Task Orders.
           required: true
           schema:
@@ -239,7 +239,7 @@ paths:
         - name: end_date
           in: query
           description: >-
-            End date of the cost data request in YYYY-MM format. Must not succeed the earliest pop_start_date of the
+            End date of the cost data request in YYYY-MM format. Must not exceed the latest pop_end_date of the
             given CLIN.
           required: true
           schema:
@@ -372,7 +372,7 @@ paths:
               $ref: '#/components/schemas/EnvironmentPatch'
       responses:
         '200':
-          description: Portfolio successfully updated
+          description: Environment successfully updated
           content:
             application/json:
               schema:
@@ -453,10 +453,10 @@ paths:
         - oidc: [atat/read-portfolio]
       description: >-
         Returns an array of FAR Part 51 Authorizations known to the vendor, so that the ATAT client can track them. This
-        must be fulfilled in this way because FAR Part 51 Authorizations are not processed through the ATAT UI in the
-        same fashion as Portfolios, Task Orders and Environments. Must return up to 100 FAR Part 51 Authorizations which
-        were created after the provided `start_date` and before the provided `end_date` query parameters, sorted by
-        `created_at`.
+        information must be provided in this way (sourced by the vendor rather than the ATAT client) because FAR Part 51
+        Authorizations are not processed through the ATAT UI in the same fashion as Portfolios, Task Orders and 
+        Environments. Must return up to 100 FAR Part 51 Authorizations which were created after the provided 
+        `start_date` and before the provided `end_date` query parameters (inclusive), sorted by `created_at`.
       operationId: getFarPart51Authorizations
       parameters:
         - name: start_date
