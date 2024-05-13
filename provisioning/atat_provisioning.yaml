@@ -73,6 +73,8 @@ paths:
                 $ref: '#/components/schemas/PortfolioCreate'
         '400':
           description: Invalid input
+        '405':
+          description: Not ready to provision
   '/portfolios/{portfolioId}':
     parameters:
       - $ref: '#/components/parameters/ApiVersion'
@@ -325,6 +327,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
+        '405':
+          description: Not ready to provision
       requestBody:
         required: true
         content:
@@ -416,32 +420,6 @@ paths:
                 $ref: '#/components/schemas/ProvisioningStatus'
         '404':
           description: Provisioning Job ID not found
-  '/task-orders/{taskOrderNumber}':
-    parameters:
-      - $ref: '#/components/parameters/ApiVersion'
-    head:
-      tags:
-        - provisioning
-      summary: Determines if a given Task Order is ready to be used for provisioning
-      security:
-        - oidc: [atat/read-portfolio]
-      description: >-
-        Vendors should return a 200 if the provided Task Order Number is ready to be used for provisioning and 400
-        otherwise.
-      operationId: checkTaskOrder
-      parameters:
-        - name: taskOrderNumber
-          description: Task Order Number
-          example: "N0006217F0001"
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The given Task Order is ready to be used for Portfolio provisioning
-        '400':
-          description: The given Task Order is not ready to be used for Portfolio provisioning
   '/far51':
     parameters:
       - $ref: '#/components/parameters/ApiVersion'
@@ -455,14 +433,14 @@ paths:
         Returns an array of FAR Part 51 Authorizations known to the vendor, so that the ATAT client can track them. This
         information must be provided in this way (sourced by the vendor rather than the ATAT client) because FAR Part 51
         Authorizations are not processed through the ATAT UI in the same fashion as Portfolios, Task Orders and 
-        Environments. Must return up to 100 FAR Part 51 Authorizations which were created after the provided 
-        `start_date` and before the provided `end_date` query parameters (inclusive), sorted by `created_at`.
+        Environments. Must return an array of FAR Part 51 Authorizations, subject to the `limit` and `offset` pagination 
+        parameters as well as the `start_date` and `end_date` query parameters, sorted by `created_at`.
       operationId: getFarPart51Authorizations
       parameters:
         - name: start_date
           in: query
           description: >-
-            Start date of the request in YYYY-MM format.
+            Start date of the request in YYYY-MM format (inclusive). Earliest allowed value is `2023-01`.
           required: true
           schema:
             type: string
@@ -471,12 +449,14 @@ paths:
         - name: end_date
           in: query
           description: >-
-            End date of the request in YYYY-MM format.
+            End date of the request in YYYY-MM format (inclusive).
           required: true
           schema:
             type: string
             format: date
             example: "2026-12"
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
       responses:
         '200':
           description: FAR Part 51 Authorizations successfully retrieved
@@ -489,7 +469,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Far51Authorization'
         '400':
-          description: Missing required parameter
+          description: Missing required parameter or invalid parameter
   '/far51/{far51AuthorizationId}/costs':
     parameters:
       - $ref: '#/components/parameters/ApiVersion'
@@ -502,13 +482,15 @@ paths:
       description: >-
         Queries CSP for actual cost data for a given FAR Part 51 Authorization and time period. Queries should return
         data for all months included in date ranges. For example, a start_date of "2022-01-25" and end_date of
-        "2022-03-02" should return data for January, February and March.
+        "2022-03-02" should return data for January, February and March. If the date range requested by the client
+        includes periods for which no data exists, the server must return whatever matching cost data does exist rather
+        than respond with an error code.
       operationId: getCostsByFar51Authorization
       parameters:
         - name: start_date
           in: query
           description: >-
-            Start date of the cost data request in YYYY-MM format.
+            Start date of the cost data request in YYYY-MM format (inclusive). Earliest allowed value is `2023-01`.
           required: true
           schema:
             type: string
@@ -517,7 +499,7 @@ paths:
         - name: end_date
           in: query
           description: >-
-            End date of the cost data request in YYYY-MM format.
+            End date of the cost data request in YYYY-MM format (inclusive).
           required: true
           schema:
             type: string
@@ -554,6 +536,23 @@ components:
       in: header
       schema:
         type: string
+    Limit:
+      name: limit
+      description: Maximum number of results to be returned for a given request
+      in: query
+      schema:
+        type: integer
+        default: 10
+        minimum: 1
+        maximum: 100
+    Offset:
+      name: offset
+      description: Offset for use when returning the n-th page of results (0-indexed)
+      in: query
+      schema:
+        type: integer
+        default: 0
+        minimum: 0
     PortfolioId:
       name: portfolioId
       description: ID of the Portfolio
