@@ -172,6 +172,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio not found
+        '405':
+          description: Not ready to provision
       requestBody:
         required: true
         content:
@@ -202,6 +204,8 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio or Task Order not found
+        '405':
+          description: Not ready to provision
       requestBody:
         required: true
         content:
