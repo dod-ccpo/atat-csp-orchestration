@@ -26,7 +26,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.3.0
+  version: 1.3.1
   title: ATAT CSP API
   contact:
     email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
@@ -521,9 +521,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CostData'
+                $ref: '#/components/schemas/CostData'
         '400':
           description: Invalid ID or query parameters
         '404':
