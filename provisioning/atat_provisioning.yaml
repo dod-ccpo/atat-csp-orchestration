@@ -18,7 +18,7 @@ info:
 
     ## Task Orders
 
-    Portfolios contain one or more *Task Orders* (TO), which in turn contain or more or *Contract Line Item Numbers*
+    Portfolios contain one or more *Task Orders* (TO), which in turn contain one or more *Contract Line Item Numbers*
     (CLINs). Each have separate Periods of Performance (PoP) dates; CLIN PoP dates will be within the time frames of
     the Task Order in which they belong.
 
@@ -26,7 +26,7 @@ info:
 
     Provisioned resources incur costs with participating CSPs. Costs related to provisioned resources can
     be attributed to specific CLINs. Actual and forecasted CSP costs can be reported by CLIN.
-  version: 1.3.1
+  version: 1.3.2
   title: ATAT CSP API
   contact:
     email: disa.meade.hacc.list.hc2-atat-dev-provisioning-api@mail.mil
@@ -110,7 +110,7 @@ paths:
         - oidc: [atat/read-cost]
       description: >-
         Queries CSP for actual or forecasted cost data across a Portfolio. Queries should return data for all months
-        included in date ranges. For example, a start_date of "2022-01-25" and end_date of "2022-03-02" should return
+        included in date ranges. For example, a `start_date` of "2022-01-25" and `end_date` of "2022-03-02" should return
         data for January, February and March. It is expected that actual results will be provided for all months which
         have been invoiced while forecast data will be provided for all future months.
       operationId: getCostsByPortfolio
@@ -118,17 +118,17 @@ paths:
         - name: start_date
           in: query
           description: >-
-            Start date of the cost data request in YYYY-MM format. Must not precede the earliest pop_start_date of the
+            Start date of the cost data request in YYYY-MM format. Must not precede the earliest `pop_start_date` of the
             given Portfolio's Task Orders.
           required: true
           schema:
             type: string
             format: date
-            example: "2021-12"
+            example: "2023-12"
         - name: end_date
           in: query
           description: >-
-            End date of the cost data request in YYYY-MM format. Must not exceed the latest pop_end_date of the given
+            End date of the cost data request in YYYY-MM format. Must not exceed the latest `pop_end_date` of the given
             Portfolio's Task Orders.
           required: true
           schema:
@@ -224,28 +224,28 @@ paths:
       security:
         - oidc: [atat/read-cost]
       description: Queries CSP for actual or forecasted cost data by CLIN
-      operationId: getCostsByClin
+      operationId: getCostsByCLIN
       parameters:
         - name: clin
           in: path
-          description: contract line item number
+          description: Contract Line Item Number
           required: true
           schema:
             type: string
         - name: start_date
           in: query
           description: >-
-            Start date of the cost data request in YYYY-MM format. Must not precede the earliest pop_start_date of the
+            Start date of the cost data request in YYYY-MM format. Must not precede the earliest `pop_start_date` of the
             given CLIN.
           required: true
           schema:
             type: string
             format: date
-            example: "2021-12"
+            example: "2023-12"
         - name: end_date
           in: query
           description: >-
-            End date of the cost data request in YYYY-MM format. Must not exceed the latest pop_end_date of the
+            End date of the cost data request in YYYY-MM format. Must not exceed the latest `pop_end_date` of the
             given CLIN.
           required: true
           schema:
@@ -258,10 +258,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CostResponseByClin'
+                $ref: '#/components/schemas/CostResponseByCLIN'
               examples:
                 CostResponseActual:
-                  $ref: '#/components/examples/CostResponseByClin'
+                  $ref: '#/components/examples/CostResponseByCLIN'
         '400':
           description: Invalid ID or query parameters
         '404':
@@ -287,7 +287,7 @@ paths:
           [#/info/description](#/info/description) and [#/components/schemas](#/components/schemas) for details of
           these constructs.
 
-          * If this Portfolio does not contain a Clin whose classification_level matches that of the given
+          * If this Portfolio does not contain a CLIN whose `classification_level` matches that of the given
           Environment, vendors should return a HTTP 400 response.
       operationId: addEnvironment
       parameters:
@@ -363,32 +363,6 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Portfolio or Environment not found
-    patch:
-      tags:
-        - access
-      security:
-        - oidc: [atat/write-portfolio]
-      description: >-
-        Updates a limited set of attributes on an existing Environment
-      operationId: patchEnvironment
-      requestBody:
-        description: An EnvironmentPatch object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EnvironmentPatch'
-      responses:
-        '200':
-          description: Environment successfully updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EnvironmentPatch'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Portfolio or Environment not found
   '/provisioning/{provisioningJobId}/status':
     parameters:
       - $ref: '#/components/parameters/ApiVersion'
@@ -449,7 +423,7 @@ paths:
           schema:
             type: string
             format: date
-            example: "2021-12"
+            example: "2023-12"
         - name: end_date
           in: query
           description: >-
@@ -485,7 +459,7 @@ paths:
         - oidc: [atat/read-cost]
       description: >-
         Queries CSP for actual cost data for a given FAR Part 51 Authorization and time period. Queries should return
-        data for all months included in date ranges. For example, a start_date of "2022-01-25" and end_date of
+        data for all months included in date ranges. For example, a `start_date` of "2022-01-25" and `end_date` of
         "2022-03-02" should return data for January, February and March. If the date range requested by the client
         includes periods for which no data exists, the server must return whatever matching cost data does exist rather
         than respond with an error code.
@@ -499,7 +473,7 @@ paths:
           schema:
             type: string
             format: date
-            example: "2021-12"
+            example: "2023-12"
         - name: end_date
           in: query
           description: >-
@@ -589,7 +563,7 @@ components:
           type: string
           description: >-
             The ID of the Provisioning job; used for retrieving status to inform end user. This
-            idea must be unique across all provisioning jobs across portfolios.
+            ID must be unique across all provisioning jobs across portfolios.
           example: "123456789"
         portfolio_id:
           type: string
@@ -643,12 +617,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnvironmentResponse'
-    EnvironmentPatch:
-      properties:
-        administrators:
-          type: array
-          items:
-            $ref: '#/components/schemas/Operator'
     EnvironmentResponse:
       description: >-
         Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs. Note that this
@@ -742,7 +710,7 @@ components:
         clins:
           type: array
           items:
-            $ref: '#/components/schemas/Clin'
+            $ref: '#/components/schemas/CLIN'
         pop_start_date:
           description: Start of period of performance for this Task Order in YYYY-MM-DD format.
           type: string
@@ -753,9 +721,9 @@ components:
           type: string
           format: date
           example: "2026-07-14"
-    Clin:
+    CLIN:
       description: >-
-        Represents a CLIN in a Task Order. Note that classification_level is required if type == "CLOUD", otherwise
+        Represents a CLIN in a Task Order. Note that `classification_level` is required if type == "CLOUD", otherwise
         it must be null or undefined.
       additionalProperties: false
       required:
@@ -868,7 +836,7 @@ components:
               type: string
               format: email
               example: "jane@agency.gov"
-    CostResponseByClin:
+    CostResponseByCLIN:
       description: >-
         Provides cost data in a format in accordance with the provided CostRequest. Implementors must provide actual
         data for any month in which real costs has been incurred, whether or not they have been invoiced. Forecast data
@@ -880,7 +848,7 @@ components:
           * Current Month - actuals and forecasts
           * Future Months - forecasts only
 
-        **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
+        **Note**: Forecast data is only required for CLIN's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
         - actual
@@ -893,7 +861,7 @@ components:
       description: >-
         Optional parameter used when the vendor offers more than one distinct Cloud System at a given classification
         level. Valid values must be provided to ATAT client by vendors. Note that it is expected that implementations
-        will ignore the display_name and description fields. They are nonetheless included to ensure that their intent
+        will ignore the `display_name` and `description` fields. They are nonetheless included to ensure that their intent
         is not misrepresented by the ATAT UI.
       required:
         - name
@@ -924,7 +892,7 @@ components:
           * Current Month - actuals and forecasts
           * Future Months - forecasts only
 
-        **Note**: Forecast data is only required for Clin's whose `type` is "CLOUD". For instance, vendors are not
+        **Note**: Forecast data is only required for CLIN's whose `type` is "CLOUD". For instance, vendors are not
         expected to provide forecast data for expenses such as travel or training.
       required:
         - task_orders
@@ -974,7 +942,7 @@ components:
                 type: string
                 description: Cost (ACTUAL or FORECAST) for the given months in USD
   examples:
-    CostResponseByClin:
+    CostResponseByCLIN:
       value:
         actual:
           total: "50.00"
