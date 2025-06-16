@@ -677,7 +677,6 @@ components:
       description: >-
         Logical container for a set of cloud resources which are paid for by a Task Order & its CLINs.
       allOf:
-        - $ref: '#/components/schemas/EnvironmentPatch'
         - $ref: '#/components/schemas/EnvironmentResponse'
       required:
         - id
