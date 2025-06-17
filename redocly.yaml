@@ -1,0 +1,15 @@
+
+extends:
+  - recommended
+
+apis:
+  atat@v1:
+    root: ./provisioning/atat_provisioning.yaml
+    rules:
+      no-empty-servers: off
+      security-defined: off
+      info-license: off
+      operation-operationId: error
+theme:
+  openapi:
+    schemasExpansionLevel: 2
