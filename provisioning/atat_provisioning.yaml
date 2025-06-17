@@ -686,7 +686,7 @@ components:
         - dashboard_link
         - classification_level
       properties:
-        operators:
+        administrators:
           type: array
           items: 
             $ref: "#/components/schemas/Operator"
