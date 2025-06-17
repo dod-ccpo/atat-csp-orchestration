@@ -349,7 +349,7 @@ paths:
         - access
       summary: Get the Environment object by the EnvironmentId.
       security:
-        - oidc: [atat/read-portfolio]      
+        - oidc: [atat/read-portfolio]
       description: >-
         Returns a single existing Environment
       operationId: getEnvironmentById
