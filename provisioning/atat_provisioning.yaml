@@ -347,8 +347,9 @@ paths:
     get:
       tags:
         - access
+      summary: Get the Environment object by the EnvironmentId.
       security:
-        - oidc: [atat/read-portfolio]
+        - oidc: [atat/read-portfolio]      
       description: >-
         Returns a single existing Environment
       operationId: getEnvironmentById
@@ -684,6 +685,11 @@ components:
         - administrators
         - dashboard_link
         - classification_level
+      properties:
+        operators:
+          type: array
+          items: 
+            $ref: "#/components/schemas/Operator"
     TaskOrder:
       type: object
       description: >-
@@ -953,7 +959,8 @@ components:
     CostResponseByPortfolio:
       value:
         task_orders:
-          - task_order_number: "1234567891234"
+          - task_order_id: "abcdefghijklmnop"
+            task_order_number: "1234567891234"
             clins:
               - clin_number: "0001"
                 actual:
